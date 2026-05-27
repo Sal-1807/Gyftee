@@ -1,0 +1,30 @@
+# ─── Python ML Service ───────────────────────────────────────────────────────
+ml-service/venv/
+ml-service/__pycache__/
+ml-service/**/__pycache__/
+ml-service/*.pyc
+ml-service/*.pyo
+ml-service/.env
+ml-service/.pytest_cache/
+
+# ─── PocketBase ──────────────────────────────────────────────────────────────
+pocketbase/pb_data/
+pocketbase/*.exe
+pocketbase/*.zip
+pb.zip
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Editor ──────────────────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+
+.claude
