@@ -1,0 +1,81 @@
+# ─── Dependencies ────────────────────────────────────────────────────────────
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ─── Next.js build output ────────────────────────────────────────────────────
+/.next/
+/out/
+/build
+
+# ─── Testing ─────────────────────────────────────────────────────────────────
+/coverage
+/.nyc_output
+
+# ─── Environment variables ───────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# ─── Vercel ──────────────────────────────────────────────────────────────────
+.vercel
+
+# ─── TypeScript ──────────────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── OS / Editor ─────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code (keep .vscode/extensions.json and settings.json if shared, ignore the rest)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+
+# ─── Debug logs ──────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# ─── Certs / Secrets ─────────────────────────────────────────────────────────
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+
+# ─── PocketBase (if running from this dir) ───────────────────────────────────
+/pocketbase/pb_data/
+/pocketbase/*.exe
+/pocketbase/*.zip
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+.cache
+.parcel-cache
+dist/
+*.tgz
+*.tar.gz
