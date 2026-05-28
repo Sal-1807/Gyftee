@@ -12,6 +12,7 @@ export async function getGifts(
   const result = await client.collection('gifts').getList(page, perPage, {
     filter,
     sort: 'created',
+    requestKey: null,
   });
   return result.items;
 }
@@ -29,6 +30,7 @@ export async function getUnswipedGifts(
 ): Promise<Gift[]> {
   const result = await client.collection('gifts').getList(1, 200, {
     sort: 'created',
+    requestKey: null,
   });
   const swipedSet = new Set(swipedIds);
   return result.items.filter((g) => !swipedSet.has(g.id));

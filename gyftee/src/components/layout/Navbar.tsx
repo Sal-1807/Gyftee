@@ -7,10 +7,13 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { getAvatarUrl } from '@/utils/pocketbase-image';
 import { cn } from '@/utils/cn';
+import { useEffect, useState } from 'react';
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <header className="hidden md:flex glass border-b border-border sticky top-0 z-40 h-16 items-center px-6">
@@ -40,7 +43,7 @@ export function Navbar() {
         ))}
       </nav>
 
-      {user && (
+      {mounted && user && (
         <div className="flex items-center gap-3">
           <Link href={`/profile/${user.username}`}>
             <Avatar src={getAvatarUrl(user)} username={user.username} size="sm" />
