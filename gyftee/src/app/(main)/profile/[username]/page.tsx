@@ -1,18 +1,22 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getUserByUsername } from '@/services/users.service';
 import { getLikedGifts } from '@/services/swipes.service';
 import { getFollowers, getFollowing } from '@/services/follows.service';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileEditModal } from '@/components/profile/ProfileEditModal';
 import { GiftGrid } from '@/components/profile/GiftGrid';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Button } from '@/components/ui/Button';
+import { Pencil } from 'lucide-react';
 
 export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
   const { user: currentUser } = useAuth();
+  const [editOpen, setEditOpen] = useState(false);
 
   const { data: profileUser, isLoading: userLoading } = useQuery({
     queryKey: ['user', username],
@@ -36,6 +40,8 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
     enabled: !!profileUser?.id,
     queryFn: () => getFollowing(profileUser!.id),
   });
+
+  const isOwnProfile = currentUser?.id === profileUser?.id;
 
   if (userLoading) {
     return (
@@ -65,10 +71,21 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
         likedCount={likedGifts?.length ?? 0}
       />
 
+      {isOwnProfile && (
+        <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+          <Pencil size={14} />
+          Edit Profile
+        </Button>
+      )}
+
       <div>
         <h2 className="text-lg font-semibold text-text mb-4">Wishlist</h2>
         <GiftGrid gifts={likedGifts ?? []} isLoading={giftsLoading} />
       </div>
+
+      {editOpen && currentUser && (
+        <ProfileEditModal user={currentUser} onClose={() => setEditOpen(false)} />
+      )}
     </div>
   );
 }

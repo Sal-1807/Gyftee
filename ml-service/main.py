@@ -182,6 +182,26 @@ async def get_recommendations(req: RecommendationRequest):
     )
 
 
+@app.post("/retrain")
+async def retrain():
+    """
+    Retrain the models with the latest data from PocketBase.
+
+    Call this after adding new gifts or after a burst of swipe activity
+    to refresh the collaborative filtering matrix without restarting the server.
+    """
+    global _all_gift_ids, _total_swipes
+    try:
+        gifts = await fetch_all_gifts()
+        swipes = await fetch_all_swipes()
+        _all_gift_ids = [g["id"] for g in gifts]
+        _total_swipes = len(swipes)
+        recommender.fit(gifts, swipes)
+        return {"status": "ok", "gifts": len(gifts), "swipes": len(swipes)}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Retrain failed: {e}")
+
+
 @app.get("/model/info", response_model=ModelInfoResponse)
 async def model_info():
     """
