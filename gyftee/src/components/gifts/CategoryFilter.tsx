@@ -1,6 +1,6 @@
 'use client';
 
-import { CATEGORIES, CATEGORY_COLORS } from '@/lib/constants';
+import { CATEGORIES } from '@/lib/constants';
 import type { GiftCategory } from '@/types/gift.types';
 import { cn } from '@/utils/cn';
 
@@ -11,36 +11,31 @@ interface CategoryFilterProps {
 
 export function CategoryFilter({ selected, onChange }: CategoryFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      {/* All chip */}
       <button
         onClick={() => onChange(undefined)}
-        className={cn(
-          'flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all',
+        className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
+        style={
           !selected
-            ? 'gradient-primary text-white shadow-lg shadow-purple-900/30'
-            : 'glass-bright text-text-muted hover:text-text'
-        )}
+            ? { backgroundColor: '#1bbf96', color: '#ffffff' }
+            : { backgroundColor: '#ffffff', color: '#6b7280', border: '1px solid #e2ede8' }
+        }
       >
         All
       </button>
+
       {CATEGORIES.map((cat) => (
         <button
           key={cat}
           onClick={() => onChange(cat)}
           className={cn(
             'flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border',
-            selected === cat
-              ? 'text-white shadow-lg'
-              : 'glass-bright text-text-muted hover:text-text border-transparent'
           )}
           style={
             selected === cat
-              ? {
-                  backgroundColor: `${CATEGORY_COLORS[cat]}30`,
-                  borderColor: `${CATEGORY_COLORS[cat]}60`,
-                  color: CATEGORY_COLORS[cat],
-                }
-              : undefined
+              ? { backgroundColor: '#1bbf96', color: '#ffffff', borderColor: '#1bbf96' }
+              : { backgroundColor: '#ffffff', color: '#6b7280', borderColor: '#e2ede8' }
           }
         >
           {cat}

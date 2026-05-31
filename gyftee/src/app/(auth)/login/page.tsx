@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Gift, Mail, Lock } from 'lucide-react';
+import { ChevronLeft, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -33,46 +33,64 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-sm space-y-8">
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 text-2xl font-bold">
-          <Gift className="text-primary-light" size={24} />
-          <span className="text-gradient">gyftee</span>
+    <div className="w-full max-w-sm relative">
+      {/* Back button */}
+      <Link
+        href="/"
+        className="absolute -top-12 left-0 w-9 h-9 bg-white rounded-full border border-border shadow-sm flex items-center justify-center text-text-muted hover:text-text transition-colors"
+      >
+        <ChevronLeft size={18} />
+      </Link>
+
+      <h1 className="text-xl font-bold text-text text-center mb-6">Log In</h1>
+
+      <div className="glass-card p-7 space-y-5">
+        {/* Icon */}
+        <div className="flex justify-center mb-2">
+          <div className="w-14 h-14 bg-surface-2 rounded-2xl flex items-center justify-center text-3xl border border-border">
+            🎁
+          </div>
         </div>
-        <p className="text-text-muted text-sm">Sign in to your account</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Email"
+            type="email"
+            placeholder="hello@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            icon={<Mail size={14} />}
+            required
+          />
+          <div className="space-y-1">
+            <Input
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              icon={<Lock size={14} />}
+              required
+            />
+            <div className="flex justify-end">
+              <button type="button" className="text-xs font-medium" style={{ color: '#1bbf96' }}>
+                Forgot password?
+              </button>
+            </div>
+          </div>
+
+          {error && <p className="text-xs text-error">{error}</p>}
+
+          <Button type="submit" fullWidth loading={isLoading} size="lg">
+            Sign In
+          </Button>
+        </form>
       </div>
 
-      <form onSubmit={handleSubmit} className="glass-card p-6 space-y-4">
-        <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          icon={<Mail size={14} />}
-          required
-        />
-        <Input
-          label="Password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          icon={<Lock size={14} />}
-          required
-        />
-
-        {error && <p className="text-xs text-red-400">{error}</p>}
-
-        <Button type="submit" fullWidth loading={isLoading} size="lg">
-          Sign in
-        </Button>
-      </form>
-
-      <p className="text-center text-sm text-text-muted">
-        No account?{' '}
-        <Link href="/signup" className="text-primary-light hover:text-primary transition-colors font-medium">
-          Sign up free
+      <p className="text-center text-sm text-text-muted mt-5">
+        Don&apos;t have an account?{' '}
+        <Link href="/signup" className="font-semibold" style={{ color: '#1bbf96' }}>
+          Sign up
         </Link>
       </p>
     </div>

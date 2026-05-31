@@ -27,17 +27,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full glass-bright rounded-xl px-4 py-3 text-sm text-text placeholder-text-dim',
+              'w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text placeholder-text-dim',
               'transition-all duration-150',
-              'focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30',
-              error && 'border-error/50 focus:border-error/50 focus:ring-error/20',
+              'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
+              error && 'border-error focus:border-error focus:ring-error/20',
               icon && 'pl-10',
               className
             )}
             {...props}
           />
         </div>
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-error">{error}</p>}
       </div>
     );
   }

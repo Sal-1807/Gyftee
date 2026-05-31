@@ -11,11 +11,12 @@ import { ProfileEditModal } from '@/components/profile/ProfileEditModal';
 import { GiftGrid } from '@/components/profile/GiftGrid';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
-import { Pencil } from 'lucide-react';
+import { useRemoveFromWishlist } from '@/hooks/useSwipes';
+import { Pencil, LogOut } from 'lucide-react';
 
 export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, logout } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
 
   const { data: profileUser, isLoading: userLoading } = useQuery({
@@ -42,6 +43,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   });
 
   const isOwnProfile = currentUser?.id === profileUser?.id;
+  const { mutate: removeGift } = useRemoveFromWishlist(currentUser?.id ?? '');
 
   if (userLoading) {
     return (
@@ -72,15 +74,30 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
       />
 
       {isOwnProfile && (
-        <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
-          <Pencil size={14} />
-          Edit Profile
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil size={14} />
+            Edit Profile
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            className="md:hidden"
+            onClick={logout}
+          >
+            <LogOut size={14} />
+            Log out
+          </Button>
+        </div>
       )}
 
       <div>
         <h2 className="text-lg font-semibold text-text mb-4">Wishlist</h2>
-        <GiftGrid gifts={likedGifts ?? []} isLoading={giftsLoading} />
+        <GiftGrid
+          gifts={likedGifts ?? []}
+          isLoading={giftsLoading}
+          onRemove={isOwnProfile ? removeGift : undefined}
+        />
       </div>
 
       {editOpen && currentUser && (

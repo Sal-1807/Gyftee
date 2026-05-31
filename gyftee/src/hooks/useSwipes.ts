@@ -1,11 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getLikedGifts, submitSwipe } from '@/services/swipes.service';
+import { getLikedGifts, submitSwipe, removeFromWishlist } from '@/services/swipes.service';
 
 export function useLikedGifts(userId: string | undefined) {
   return useQuery({
     queryKey: ['swipes', 'liked', userId],
     enabled: !!userId,
     queryFn: () => getLikedGifts(userId!),
+  });
+}
+
+export function useRemoveFromWishlist(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (giftId: string) => removeFromWishlist(userId, giftId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['likedGifts', userId] });
+      qc.invalidateQueries({ queryKey: ['swipes', 'liked', userId] });
+    },
   });
 }
 

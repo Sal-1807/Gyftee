@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_PATHS = ['/swipe', '/discover', '/feed', '/profile'];
+const PROTECTED_PATHS = ['/swipe', '/discover', '/feed', '/profile', '/onboarding'];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -33,5 +33,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/swipe/:path*', '/discover/:path*', '/feed/:path*', '/profile/:path*'],
+  matcher: ['/swipe/:path*', '/discover/:path*', '/feed/:path*', '/profile/:path*', '/onboarding'],
 };

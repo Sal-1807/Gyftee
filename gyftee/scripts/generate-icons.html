@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Gyftee Icons</title></head>
+<body style="font-family:sans-serif;padding:24px;background:#f0fdf4">
+  <h2>Gyftee Icon Generator</h2>
+  <canvas id="c192" width="192" height="192" style="border-radius:24px;margin-right:16px"></canvas>
+  <canvas id="c512" width="512" height="512" style="border-radius:64px"></canvas>
+  <br><br>
+  <button onclick="download('c192','icon-192.png')">Download icon-192.png</button>
+  <button onclick="download('c512','icon-512.png')">Download icon-512.png</button>
+
+  <script>
+    function drawIcon(canvas) {
+      const ctx = canvas.getContext('2d');
+      const s = canvas.width;
+      const p = s * 0.15;
+
+      // Mint green background
+      ctx.fillStyle = '#6ee7b7';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, s, s, s * 0.18);
+      ctx.fill();
+
+      // Draw gift box using canvas paths, scaled to canvas size
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = s * 0.045;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const cx = s / 2;
+      const boxTop = s * 0.46;
+      const boxBot = s * 0.82;
+      const boxLeft = s * 0.2;
+      const boxRight = s * 0.8;
+      const lidTop = s * 0.38;
+      const lidBot = s * 0.50;
+
+      // Box body
+      ctx.beginPath();
+      ctx.rect(boxLeft, boxTop, boxRight - boxLeft, boxBot - boxTop);
+      ctx.stroke();
+
+      // Lid
+      ctx.beginPath();
+      ctx.rect(boxLeft - s*0.03, lidTop, (boxRight - boxLeft) + s*0.06, lidBot - lidTop);
+      ctx.stroke();
+
+      // Vertical ribbon on box
+      ctx.beginPath();
+      ctx.moveTo(cx, boxTop);
+      ctx.lineTo(cx, boxBot);
+      ctx.stroke();
+
+      // Vertical ribbon on lid
+      ctx.beginPath();
+      ctx.moveTo(cx, lidTop);
+      ctx.lineTo(cx, lidBot);
+      ctx.stroke();
+
+      // Bow - left loop
+      ctx.beginPath();
+      ctx.ellipse(cx - s*0.13, s*0.28, s*0.12, s*0.09, -0.4, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Bow - right loop
+      ctx.beginPath();
+      ctx.ellipse(cx + s*0.13, s*0.28, s*0.12, s*0.09, 0.4, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Bow - center knot
+      ctx.beginPath();
+      ctx.arc(cx, s*0.30, s*0.035, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.stroke();
+
+      // Left ribbon tail
+      ctx.beginPath();
+      ctx.moveTo(cx, s*0.33);
+      ctx.quadraticCurveTo(cx - s*0.06, s*0.38, cx - s*0.04, lidTop);
+      ctx.stroke();
+
+      // Right ribbon tail
+      ctx.beginPath();
+      ctx.moveTo(cx, s*0.33);
+      ctx.quadraticCurveTo(cx + s*0.06, s*0.38, cx + s*0.04, lidTop);
+      ctx.stroke();
+    }
+
+    const c192 = document.getElementById('c192');
+    const c512 = document.getElementById('c512');
+    drawIcon(c192);
+    drawIcon(c512);
+
+    function download(id, filename) {
+      const a = document.createElement('a');
+      a.download = filename;
+      a.href = document.getElementById(id).toDataURL('image/png');
+      a.click();
+    }
+  </script>
+</body>
+</html>

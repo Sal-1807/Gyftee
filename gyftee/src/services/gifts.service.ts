@@ -42,3 +42,39 @@ export async function getAllGiftIds(
   const result = await client.collection('gifts').getFullList({ fields: 'id' });
   return result.map((g) => g.id);
 }
+
+export async function searchGifts(
+  query: string,
+  client: TypedPocketBase = pb
+): Promise<Gift[]> {
+  const q = query.trim().replace(/"/g, '');
+  if (!q) return [];
+  const result = await client.collection('gifts').getList(1, 30, {
+    filter: `name ~ "${q}" || description ~ "${q}" || category ~ "${q}"`,
+    requestKey: null,
+  });
+  return result.items;
+}
+
+export async function createGift(
+  data: {
+    name: string;
+    description: string;
+    category: GiftCategory;
+    price: number;
+    store_link?: string;
+    tags: string[];
+    imageFile?: File;
+  },
+  client: TypedPocketBase = pb
+): Promise<Gift> {
+  const formData = new FormData();
+  formData.append('name', data.name.trim());
+  formData.append('description', data.description.trim());
+  formData.append('category', data.category);
+  formData.append('price', String(data.price));
+  formData.append('tags', JSON.stringify(data.tags));
+  if (data.store_link?.trim()) formData.append('store_link', data.store_link.trim());
+  if (data.imageFile) formData.append('image', data.imageFile);
+  return client.collection('gifts').create(formData) as Promise<Gift>;
+}

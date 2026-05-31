@@ -33,3 +33,16 @@ export async function updateUsername(
 ): Promise<AppUser> {
   return client.collection('users').update(userId, { username });
 }
+
+export async function searchUsers(
+  query: string,
+  client: TypedPocketBase = pb
+): Promise<AppUser[]> {
+  const q = query.trim().replace(/"/g, '');
+  if (!q) return [];
+  const result = await client.collection('users').getList(1, 20, {
+    filter: `username ~ "${q}" || name ~ "${q}"`,
+    requestKey: null,
+  });
+  return result.items as AppUser[];
+}

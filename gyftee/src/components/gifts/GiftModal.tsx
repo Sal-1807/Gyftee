@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { X, ExternalLink, Heart, Tag } from 'lucide-react';
+import { X, ExternalLink, Heart, Tag, Share2 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Gift } from '@/types/gift.types';
 import { getGiftImageUrl } from '@/utils/pocketbase-image';
@@ -16,6 +17,20 @@ interface GiftModalProps {
 }
 
 export function GiftModal({ gift, onClose }: GiftModalProps) {
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    if (!gift) return;
+    const url = `${window.location.origin}/discover?gift=${gift.id}`;
+    const shareData = { title: gift.name, text: `Check out "${gift.name}" on Gyftee!`, url };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast('Link copied!', 'success');
+    }
+  };
+
   return (
     <AnimatePresence>
       {gift && (
@@ -99,9 +114,9 @@ export function GiftModal({ gift, onClose }: GiftModalProps) {
                     </Button>
                   </a>
                 )}
-                <Button variant="secondary" size="md">
-                  <Heart size={14} />
-                  Save
+                <Button variant="secondary" size="md" onClick={handleShare}>
+                  <Share2 size={14} />
+                  Share
                 </Button>
               </div>
             </div>

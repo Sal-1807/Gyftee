@@ -1,27 +1,29 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
+import { X, Heart } from 'lucide-react';
 import type { Gift } from '@/types/gift.types';
-import { GiftCard } from '@/components/gifts/GiftCard';
 import { GiftModal } from '@/components/gifts/GiftModal';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Heart } from 'lucide-react';
+import { getGiftImageUrl } from '@/utils/pocketbase-image';
+import { formatPrice } from '@/utils/format';
+import { cn } from '@/utils/cn';
 
 interface GiftGridProps {
   gifts: Gift[];
   isLoading?: boolean;
+  onRemove?: (giftId: string) => void;
 }
 
-export function GiftGrid({ gifts, isLoading }: GiftGridProps) {
+export function GiftGrid({ gifts, isLoading, onRemove }: GiftGridProps) {
   const [selected, setSelected] = useState<Gift | null>(null);
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <CardSkeleton key={i} />
-        ))}
+      <div className="grid grid-cols-3 gap-2">
+        {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
       </div>
     );
   }
@@ -38,9 +40,43 @@ export function GiftGrid({ gifts, isLoading }: GiftGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {gifts.map((gift) => (
-          <GiftCard key={gift.id} gift={gift} onClick={() => setSelected(gift)} />
+          <div
+            key={gift.id}
+            className="relative group cursor-pointer rounded-xl overflow-hidden aspect-square bg-surface-2 border border-border"
+            onClick={() => setSelected(gift)}
+          >
+            <Image
+              src={getGiftImageUrl(gift)}
+              alt={gift.name}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 33vw, 20vw"
+            />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+            <div className="absolute bottom-0 inset-x-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-white text-[10px] font-semibold truncate drop-shadow">{gift.name}</p>
+              <p className="text-[10px] font-bold drop-shadow" style={{ color: '#1bbf96' }}>{formatPrice(gift.price)}</p>
+            </div>
+
+            {/* Remove button */}
+            {onRemove && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onRemove(gift.id); }}
+                className={cn(
+                  'absolute top-1.5 right-1.5 w-6 h-6 bg-white/90 rounded-full',
+                  'flex items-center justify-center text-red-400',
+                  'opacity-0 group-hover:opacity-100 transition-opacity shadow-sm',
+                  'hover:bg-red-50 active:scale-90'
+                )}
+                aria-label="Remove from wishlist"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
         ))}
       </div>
       <GiftModal gift={selected} onClose={() => setSelected(null)} />

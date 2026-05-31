@@ -41,6 +41,18 @@ export async function submitSwipe(
   });
 }
 
+export async function removeFromWishlist(
+  userId: string,
+  giftId: string,
+  client: TypedPocketBase = pb
+): Promise<void> {
+  const records = await client.collection('swipes').getFullList({
+    filter: `user = "${userId}" && gift = "${giftId}"`,
+    requestKey: null,
+  });
+  await Promise.all(records.map((r) => client.collection('swipes').delete(r.id)));
+}
+
 export async function getSwipedGiftIds(
   userId: string,
   client: TypedPocketBase = pb
