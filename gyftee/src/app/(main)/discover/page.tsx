@@ -8,6 +8,7 @@ import { useGifts } from '@/hooks/useGifts';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsFollowing, useToggleFollow } from '@/hooks/useFollows';
+import { useLikedGifts, useSubmitSwipe, useRemoveFromWishlist } from '@/hooks/useSwipes';
 import { GiftCard } from '@/components/gifts/GiftCard';
 import { GiftModal } from '@/components/gifts/GiftModal';
 import { CategoryFilter } from '@/components/gifts/CategoryFilter';
@@ -23,7 +24,10 @@ import type { Gift, GiftCategory } from '@/types/gift.types';
 import type { AppUser } from '@/types/user.types';
 import { pb } from '@/lib/pocketbase';
 import { AddGiftModal } from '@/components/gifts/AddGiftModal';
+import { PriceSlider } from '@/components/gifts/PriceSlider';
 import { Search, Sparkles, Brain, UserPlus, UserCheck, Plus } from 'lucide-react';
+
+const MAX_PRICE_INR = 7000;
 
 function UserRow({ user, currentUserId }: { user: AppUser; currentUserId: string }) {
   const { data: following } = useIsFollowing(currentUserId, user.id);
@@ -60,10 +64,25 @@ export default function DiscoverPage() {
   const [selected, setSelected] = useState<Gift | null>(null);
   const [query, setQuery] = useState('');
   const [addOpen, setAddOpen] = useState(false);
+  const [maxPrice, setMaxPrice] = useState(Infinity);
   const debouncedQuery = useDebounce(query, 300);
+
+  const { data: likedGifts } = useLikedGifts(user?.id);
+  const wishlistedIds = new Set(likedGifts?.map((g) => g.id));
+  const { mutate: addToWishlist } = useSubmitSwipe(user?.id ?? '');
+  const { mutate: removeFromWishlist } = useRemoveFromWishlist(user?.id ?? '');
+
+  function handleWishlistToggle(gift: Gift) {
+    if (!user) return;
+    if (wishlistedIds.has(gift.id)) {
+      removeFromWishlist(gift.id);
+    } else {
+      addToWishlist({ giftId: gift.id, liked: true });
+    }
+  }
   const isSearching = debouncedQuery.trim().length > 0;
 
-  const { data: allGifts, isLoading: giftsLoading } = useGifts(category);
+  const { data: allGifts, isLoading: giftsLoading } = useGifts(category, undefined, maxPrice === Infinity ? undefined : maxPrice);
   const { data: rec } = useRecommendations(20);
 
   const { data: recommendedGifts, isLoading: recLoading } = useQuery({
@@ -123,7 +142,13 @@ export default function DiscoverPage() {
             ) : giftResults?.length ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {giftResults.map((gift) => (
-                  <GiftCard key={gift.id} gift={gift} onClick={() => setSelected(gift)} />
+                  <GiftCard
+                    key={gift.id}
+                    gift={gift}
+                    onClick={() => setSelected(gift)}
+                    isWishlisted={wishlistedIds.has(gift.id)}
+                    onWishlistToggle={() => handleWishlistToggle(gift)}
+                  />
                 ))}
               </div>
             ) : (
@@ -181,8 +206,16 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          <div className="mb-5">
+          <div className="mb-3">
             <CategoryFilter selected={category} onChange={setCategory} />
+          </div>
+
+          <div className="glass-card p-4 mb-5">
+            <PriceSlider
+              maxPrice={maxPrice}
+              onMaxPriceChange={setMaxPrice}
+              absoluteMax={MAX_PRICE_INR}
+            />
           </div>
 
           {isLoading ? (
@@ -192,7 +225,13 @@ export default function DiscoverPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {displayGifts.map((gift) => (
-                <GiftCard key={gift.id} gift={gift} onClick={() => setSelected(gift)} />
+                <GiftCard
+                    key={gift.id}
+                    gift={gift}
+                    onClick={() => setSelected(gift)}
+                    isWishlisted={wishlistedIds.has(gift.id)}
+                    onWishlistToggle={() => handleWishlistToggle(gift)}
+                  />
               ))}
             </div>
           )}

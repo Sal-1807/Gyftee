@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const CARDS = [
-  { emoji: '⌨️', name: 'Mech Keyboard', price: '$129', category: 'Tech',    delay: 0,   rotate: -8,  top: '-16px',    left: '-20px'  },
-  { emoji: '👟', name: 'Air Jordan 1',  price: '$180', category: 'Fashion', delay: 0.7, rotate:  8,  top: '-16px',    right: '-20px' },
-  { emoji: '🎮', name: 'PS5 Controller',price: '$69',  category: 'Gaming',  delay: 0.4, rotate:  6,  bottom: '-16px', left: '-20px'  },
-  { emoji: '📚', name: 'Atomic Habits', price: '$18',  category: 'Books',   delay: 1.0, rotate: -6,  bottom: '-16px', right: '-20px' },
+  { emoji: '⌨️', name: 'Mech Keyboard', price: '₹2,499', category: 'Tech',    delay: 0,   rotate: -8,  top: '-16px',    left: '-20px'  },
+  { emoji: '👗', name: 'Kurti Set',      price: '₹1,299', category: 'Fashion', delay: 0.7, rotate:  8,  top: '-16px',    right: '-20px' },
+  { emoji: '🎮', name: 'PS5 Controller', price: '₹5,999', category: 'Gaming',  delay: 0.4, rotate:  6,  bottom: '-16px', left: '-20px'  },
+  { emoji: '📚', name: 'Atomic Habits',  price: '₹299',   category: 'Books',   delay: 1.0, rotate: -6,  bottom: '-16px', right: '-20px' },
 ];
 
 type CardPos = {
@@ -46,30 +46,19 @@ export default function LandingPage() {
       className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
       style={{ backgroundColor: '#edfaf5' }}
     >
-      {/* Corner cards — bleed off screen edges */}
       {CARDS.map((card) => (
         <FloatingCard key={card.name} {...card} />
       ))}
 
-      {/* Main content — padded so it never touches cards */}
+      {/* Main content — no entry animations, always visible */}
       <div className="relative z-10 flex flex-col items-center text-center w-full max-w-xs mx-auto gap-6 px-6 py-24">
 
-        {/* App icon */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center text-3xl"
-        >
+        <div className="animate-fade-up-1 w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center text-3xl">
           🎁
-        </motion.div>
+        </div>
 
-        {/* Heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-4xl font-black leading-tight"
+        <h1
+          className="animate-fade-up-2 text-4xl font-black leading-tight"
           style={{
             background: 'linear-gradient(135deg, #1bbf96 0%, #f87171 100%)',
             WebkitBackgroundClip: 'text',
@@ -78,25 +67,13 @@ export default function LandingPage() {
           }}
         >
           Discover gifts you actually want
-        </motion.h1>
+        </h1>
 
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-text-muted text-sm leading-relaxed"
-        >
+        <p className="animate-fade-up-3 text-text-muted text-sm leading-relaxed">
           Swipe, save, and share. The easiest way to build your perfect wishlist and find what your friends love.
-        </motion.p>
+        </p>
 
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-col gap-3 w-full"
-        >
+        <div className="animate-fade-up-4 flex flex-col gap-3 w-full">
           <Link
             href="/signup"
             className="w-full py-4 rounded-full font-semibold text-base text-white text-center transition-all hover:opacity-90 active:scale-95 shadow-sm"
@@ -111,7 +88,7 @@ export default function LandingPage() {
           >
             Log In
           </Link>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

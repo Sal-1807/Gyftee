@@ -147,11 +147,11 @@ export function AddGiftModal({ onClose }: AddGiftModalProps) {
         </div>
 
         <Input
-          label="Price (USD)"
+          label="Price (₹)"
           type="number"
           min="0"
-          step="0.01"
-          placeholder="29.99"
+          step="1"
+          placeholder="999"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />

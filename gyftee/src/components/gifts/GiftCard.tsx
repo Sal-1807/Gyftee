@@ -11,9 +11,11 @@ interface GiftCardProps {
   gift: Gift;
   onClick?: () => void;
   className?: string;
+  isWishlisted?: boolean;
+  onWishlistToggle?: (e: React.MouseEvent) => void;
 }
 
-export function GiftCard({ gift, onClick, className }: GiftCardProps) {
+export function GiftCard({ gift, onClick, className, isWishlisted, onWishlistToggle }: GiftCardProps) {
   return (
     <div
       onClick={onClick}
@@ -33,11 +35,15 @@ export function GiftCard({ gift, onClick, className }: GiftCardProps) {
         />
         {/* Heart icon */}
         <button
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onWishlistToggle?.(e); }}
           className="absolute top-2.5 right-2.5 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-colors hover:bg-white"
-          aria-label="Save"
+          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
-          <Heart size={14} className="text-text-dim" />
+          <Heart
+            size={14}
+            className={isWishlisted ? 'fill-current' : 'text-text-dim'}
+            style={isWishlisted ? { color: '#f87171' } : undefined}
+          />
         </button>
       </div>
 

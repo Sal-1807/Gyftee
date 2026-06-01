@@ -14,9 +14,11 @@ interface ProfileHeaderProps {
   followersCount: number;
   followingCount: number;
   likedCount: number;
+  onFollowersClick?: () => void;
+  onFollowingClick?: () => void;
 }
 
-export function ProfileHeader({ user, followersCount, followingCount, likedCount }: ProfileHeaderProps) {
+export function ProfileHeader({ user, followersCount, followingCount, likedCount, onFollowersClick, onFollowingClick }: ProfileHeaderProps) {
   const { user: currentUser } = useAuth();
   const isOwnProfile = currentUser?.id === user.id;
   const { toast } = useToast();
@@ -75,11 +77,15 @@ export function ProfileHeader({ user, followersCount, followingCount, likedCount
       {/* Stats */}
       <div className="glass-card w-full grid grid-cols-3 divide-x divide-border text-center mt-2">
         {[
-          { label: 'Followers', value: followersCount },
-          { label: 'Following', value: followingCount },
-          { label: 'Wishlist',  value: likedCount     },
-        ].map(({ label, value }) => (
-          <div key={label} className="py-3">
+          { label: 'Followers', value: followersCount, onClick: onFollowersClick },
+          { label: 'Following', value: followingCount, onClick: onFollowingClick },
+          { label: 'Wishlist',  value: likedCount,     onClick: undefined         },
+        ].map(({ label, value, onClick }) => (
+          <div
+            key={label}
+            className={`py-3 ${onClick ? 'cursor-pointer hover:bg-surface-2 transition-colors rounded-xl' : ''}`}
+            onClick={onClick}
+          >
             <p className="text-xl font-bold" style={{ color: '#1bbf96' }}>{value}</p>
             <p className="text-xs text-text-muted mt-0.5">{label}</p>
           </div>

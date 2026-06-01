@@ -149,6 +149,19 @@ body {
 
 .animate-float { animation: float 3s ease-in-out infinite; }
 
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out forwards;
+}
+.animate-fade-up-1 { animation: fade-up 0.5s ease-out 0.05s both; }
+.animate-fade-up-2 { animation: fade-up 0.5s ease-out 0.15s both; }
+.animate-fade-up-3 { animation: fade-up 0.5s ease-out 0.25s both; }
+.animate-fade-up-4 { animation: fade-up 0.5s ease-out 0.35s both; }
+
 .skeleton {
   background: linear-gradient(90deg, #e8f5ef 25%, #d4ede5 50%, #e8f5ef 75%);
   background-size: 200% 100%;
@@ -159,4 +172,25 @@ body {
 select option {
   background: #ffffff;
   color: #1a2e25;
+}
+
+/* ── Range slider thumb ─────────────────────────────────────────────────────── */
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1bbf96;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1bbf96;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
 }

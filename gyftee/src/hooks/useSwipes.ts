@@ -16,6 +16,7 @@ export function useRemoveFromWishlist(userId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['likedGifts', userId] });
       qc.invalidateQueries({ queryKey: ['swipes', 'liked', userId] });
+      qc.invalidateQueries({ queryKey: ['feed'] });
     },
   });
 }
@@ -28,6 +29,7 @@ export function useSubmitSwipe(userId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['gifts', 'unswiped', userId] });
       qc.invalidateQueries({ queryKey: ['swipes', 'liked', userId] });
+      qc.invalidateQueries({ queryKey: ['feed'] });
     },
   });
 }

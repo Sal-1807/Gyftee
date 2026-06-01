@@ -16,6 +16,8 @@
 
 # ─── Environment variables ───────────────────────────────────────────────────
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
 .env.development.local
@@ -74,9 +76,17 @@ yarn-error.log*
 /pocketbase/pocketbase
 /pocketbase/*.zip
 
+# ─── Testing ─────────────────────────────────────────────────────────────────
+/playwright-report/
+/test-results/
+/e2e-results/
+
 # ─── Misc ────────────────────────────────────────────────────────────────────
 .cache
 .parcel-cache
 dist/
 *.tgz
 *.tar.gz
+*.swp
+*.swo
+*~

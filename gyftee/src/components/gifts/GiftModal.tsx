@@ -3,10 +3,10 @@
 import Image from 'next/image';
 import { X, ExternalLink, Heart, Tag, Share2 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import { formatPrice } from '@/utils/format';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Gift } from '@/types/gift.types';
 import { getGiftImageUrl } from '@/utils/pocketbase-image';
-import { formatPrice } from '@/utils/format';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CATEGORY_COLORS } from '@/lib/constants';
@@ -57,17 +57,17 @@ export function GiftModal({ gift, onClose }: GiftModalProps) {
                 className="object-cover"
                 sizes="512px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-surface/90 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <button
                 onClick={onClose}
-                className="absolute top-3 right-3 w-8 h-8 glass rounded-full flex items-center justify-center text-text-muted hover:text-text transition-colors"
+                className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-text-muted hover:text-text transition-colors"
               >
                 <X size={16} />
               </button>
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-end justify-between gap-2">
                   <h2 className="text-xl font-bold text-white leading-tight">{gift.name}</h2>
-                  <span className="text-xl font-bold text-primary-light flex-shrink-0">
+                  <span className="text-xl font-bold flex-shrink-0" style={{ color: '#1bbf96' }}>
                     {formatPrice(gift.price)}
                   </span>
                 </div>

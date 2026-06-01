@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -11,8 +11,8 @@ import { GiftModal } from '@/components/gifts/GiftModal';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { getAvatarUrl, getGiftImageUrl } from '@/utils/pocketbase-image';
-import { formatPrice, timeAgo } from '@/utils/format';
-import { Rss, Heart } from 'lucide-react';
+import { timeAgo, formatPrice } from '@/utils/format';
+import { Rss, Heart, HeartOff } from 'lucide-react';
 import type { Gift } from '@/types/gift.types';
 import type { AppUser } from '@/types/user.types';
 
@@ -20,12 +20,14 @@ export default function FeedPage() {
   const { user } = useAuth();
   const { data: swipes, isLoading } = useFeed(user?.id);
   const [selected, setSelected] = useState<Gift | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-8">
       <PageHeader title="Feed" subtitle="What your friends are loving" />
 
-      {isLoading && (
+      {(!mounted || isLoading) && (
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="glass-card p-4 space-y-3">
@@ -40,7 +42,7 @@ export default function FeedPage() {
         </div>
       )}
 
-      {!isLoading && (!swipes || swipes.length === 0) && (
+      {mounted && !isLoading && (!swipes || swipes.length === 0) && (
         <EmptyState
           icon={<Rss />}
           title="Your feed is empty"
@@ -48,7 +50,7 @@ export default function FeedPage() {
         />
       )}
 
-      {!isLoading && swipes && swipes.length > 0 && (
+      {mounted && !isLoading && swipes && swipes.length > 0 && (
         <div className="space-y-4">
           {swipes.map((swipe) => {
             const swipeUser = swipe.expand?.user as AppUser | undefined;
@@ -71,10 +73,15 @@ export default function FeedPage() {
                     <span className="text-sm font-medium text-text">
                       {swipeUser?.username ?? 'Someone'}
                     </span>
-                    <span className="text-sm text-text-muted"> liked a gift</span>
-                    <p className="text-xs text-text-dim">{timeAgo(swipe.created)}</p>
+                    <span className="text-sm text-text-muted">
+                      {swipe.liked ? ' liked a gift' : ' removed from wishlist'}
+                    </span>
+                    <p className="text-xs text-text-dim">{timeAgo(swipe.updated)}</p>
                   </div>
-                  <Heart size={14} className="text-accent flex-shrink-0" />
+                  {swipe.liked
+                    ? <Heart size={14} className="text-accent flex-shrink-0" />
+                    : <HeartOff size={14} className="text-text-muted flex-shrink-0" />
+                  }
                 </div>
 
                 <button
@@ -89,10 +96,10 @@ export default function FeedPage() {
                       className="object-cover"
                       sizes="560px"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-surface/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                       <p className="font-semibold text-white text-sm">{gift.name}</p>
-                      <span className="text-sm font-bold text-primary-light">
+                      <span className="text-sm font-bold" style={{ color: '#1bbf96' }}>
                         {formatPrice(gift.price)}
                       </span>
                     </div>

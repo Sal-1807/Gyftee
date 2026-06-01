@@ -4,13 +4,16 @@ import type { TypedPocketBase } from '@/types/pocketbase.types';
 import { GIFTS_PER_PAGE } from '@/lib/constants';
 
 export async function getGifts(
-  opts?: { category?: GiftCategory; page?: number; perPage?: number },
+  opts?: { category?: GiftCategory; page?: number; perPage?: number; minPrice?: number; maxPrice?: number },
   client: TypedPocketBase = pb
 ): Promise<Gift[]> {
-  const { category, page = 1, perPage = GIFTS_PER_PAGE } = opts ?? {};
-  const filter = category ? `category = "${category}"` : '';
+  const { category, page = 1, perPage = GIFTS_PER_PAGE, minPrice, maxPrice } = opts ?? {};
+  const filters: string[] = [];
+  if (category) filters.push(`category = "${category}"`);
+  if (minPrice !== undefined) filters.push(`price >= ${minPrice}`);
+  if (maxPrice !== undefined) filters.push(`price <= ${maxPrice}`);
   const result = await client.collection('gifts').getList(page, perPage, {
-    filter,
+    filter: filters.join(' && '),
     sort: 'created',
     requestKey: null,
   });

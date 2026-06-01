@@ -8,6 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
+import { useRouter } from 'next/navigation';
 import { pb } from '@/lib/pocketbase';
 import type { AppUser } from '@/types/user.types';
 
@@ -22,6 +23,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<AppUser | null>(
     pb.authStore.record as AppUser | null
   );
@@ -69,7 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     pb.authStore.clear();
     syncCookie();
-  }, [syncCookie]);
+    router.push('/');
+  }, [syncCookie, router]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>

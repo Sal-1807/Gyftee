@@ -32,9 +32,11 @@ export default function SignupPage() {
       router.push('/onboarding');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
-      if (msg.includes('username')) setError('Username already taken.');
-      else if (msg.includes('email')) setError('Email already registered.');
-      else setError(msg);
+      const data = (err as any)?.data;
+      const detail = data ? JSON.stringify(data) : msg;
+      if (msg.includes('username') || detail.includes('username')) setError('Username already taken.');
+      else if (msg.includes('email') || detail.includes('email')) setError('Email already registered.');
+      else setError(detail);
     }
   };
 

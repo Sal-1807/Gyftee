@@ -17,6 +17,17 @@ ml-service/build/
 ml-service/*.egg-info/
 ml-service/.python-version
 
+# ─── Node ────────────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Environment variables ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
 # ─── PocketBase ──────────────────────────────────────────────────────────────
 pocketbase/pb_data/
 pocketbase/*.exe
