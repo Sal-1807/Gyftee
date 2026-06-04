@@ -12,7 +12,7 @@ import { ProfileEditModal } from '@/components/profile/ProfileEditModal';
 import { GiftGrid } from '@/components/profile/GiftGrid';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
-import { useRemoveFromWishlist } from '@/hooks/useSwipes';
+import { useLikedGifts, useSubmitSwipe, useRemoveFromWishlist } from '@/hooks/useSwipes';
 import { FollowListModal } from '@/components/profile/FollowListModal';
 import type { AppUser } from '@/types/user.types';
 import type { Follower } from '@/types/user.types';
@@ -53,6 +53,18 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   });
 
   const { mutate: removeGift } = useRemoveFromWishlist(currentUser?.id ?? '');
+  const { data: viewerLikedGifts } = useLikedGifts(currentUser?.id);
+  const viewerWishlistedIds = new Set(viewerLikedGifts?.map((g) => g.id));
+  const { mutate: addToWishlist } = useSubmitSwipe(currentUser?.id ?? '');
+
+  const handleViewerWishlistToggle = (giftId: string) => {
+    if (!currentUser) return;
+    if (viewerWishlistedIds.has(giftId)) {
+      removeGift(giftId);
+    } else {
+      addToWishlist({ giftId, liked: true });
+    }
+  };
 
   if (userLoading) {
     return (
@@ -105,6 +117,8 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
             gifts={likedGifts ?? []}
             isLoading={giftsLoading}
             onRemove={isOwnProfile ? removeGift : undefined}
+            viewerWishlistedIds={!isOwnProfile ? viewerWishlistedIds : undefined}
+            onViewerWishlistToggle={!isOwnProfile ? handleViewerWishlistToggle : undefined}
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-14 gap-4 text-center">

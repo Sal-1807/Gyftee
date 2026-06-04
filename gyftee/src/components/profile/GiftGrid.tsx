@@ -14,9 +14,11 @@ interface GiftGridProps {
   gifts: Gift[];
   isLoading?: boolean;
   onRemove?: (giftId: string) => void;
+  viewerWishlistedIds?: Set<string>;
+  onViewerWishlistToggle?: (giftId: string) => void;
 }
 
-export function GiftGrid({ gifts, isLoading, onRemove }: GiftGridProps) {
+export function GiftGrid({ gifts, isLoading, onRemove, viewerWishlistedIds, onViewerWishlistToggle }: GiftGridProps) {
   const [selected, setSelected] = useState<Gift | null>(null);
 
   if (isLoading) {
@@ -58,7 +60,7 @@ export function GiftGrid({ gifts, isLoading, onRemove }: GiftGridProps) {
               <p className="text-[10px] font-bold drop-shadow" style={{ color: '#1bbf96' }}>{formatPrice(gift.price)}</p>
             </div>
 
-            {/* Remove button */}
+            {/* Remove button (own profile) */}
             {onRemove && (
               <button
                 onClick={(e) => { e.stopPropagation(); onRemove(gift.id); }}
@@ -73,10 +75,34 @@ export function GiftGrid({ gifts, isLoading, onRemove }: GiftGridProps) {
                 <X size={12} />
               </button>
             )}
+
+            {/* Wishlist toggle (viewer on another user's profile) */}
+            {onViewerWishlistToggle && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onViewerWishlistToggle(gift.id); }}
+                className={cn(
+                  'absolute top-1.5 right-1.5 w-6 h-6 bg-white/90 rounded-full',
+                  'flex items-center justify-center shadow-sm',
+                  'hover:bg-red-50 active:scale-90 transition-all'
+                )}
+                aria-label={viewerWishlistedIds?.has(gift.id) ? 'Remove from your wishlist' : 'Add to your wishlist'}
+              >
+                <Heart
+                  size={11}
+                  className={viewerWishlistedIds?.has(gift.id) ? 'fill-current' : 'text-text-dim'}
+                  style={viewerWishlistedIds?.has(gift.id) ? { color: '#f87171' } : undefined}
+                />
+              </button>
+            )}
           </div>
         ))}
       </div>
-      <GiftModal gift={selected} onClose={() => setSelected(null)} />
+      <GiftModal
+        gift={selected}
+        onClose={() => setSelected(null)}
+        isWishlisted={selected && onViewerWishlistToggle ? viewerWishlistedIds?.has(selected.id) : undefined}
+        onWishlistToggle={selected && onViewerWishlistToggle ? () => onViewerWishlistToggle(selected.id) : undefined}
+      />
     </>
   );
 }

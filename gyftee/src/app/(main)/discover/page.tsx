@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useGifts } from '@/hooks/useGifts';
-import { useRecommendations } from '@/hooks/useRecommendations';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsFollowing, useToggleFollow } from '@/hooks/useFollows';
 import { useLikedGifts, useSubmitSwipe, useRemoveFromWishlist } from '@/hooks/useSwipes';
@@ -22,7 +21,6 @@ import { searchUsers } from '@/services/users.service';
 import { getAvatarUrl } from '@/utils/pocketbase-image';
 import type { Gift, GiftCategory } from '@/types/gift.types';
 import type { AppUser } from '@/types/user.types';
-import { pb } from '@/lib/pocketbase';
 import { AddGiftModal } from '@/components/gifts/AddGiftModal';
 import { PriceSlider } from '@/components/gifts/PriceSlider';
 import { Search, UserPlus, UserCheck, Plus } from 'lucide-react';
@@ -82,19 +80,9 @@ export default function DiscoverPage() {
   }
   const isSearching = debouncedQuery.trim().length > 0;
 
-  const { data: allGifts, isLoading: giftsLoading } = useGifts(category, undefined, maxPrice === Infinity ? undefined : maxPrice);
-  const { data: rec } = useRecommendations(20);
-
-  const { data: recommendedGifts, isLoading: recLoading } = useQuery({
-    queryKey: ['recommendedGifts', rec?.gift_ids],
-    enabled: !!rec?.gift_ids?.length && !isSearching,
-    queryFn: async () => {
-      const items = await Promise.all(
-        rec!.gift_ids.map((id) => pb.collection('gifts').getOne(id))
-      );
-      return items as Gift[];
-    },
-  });
+  // "All" fetches the full catalogue; category views use the default page size.
+  const allPerPage = category ? undefined : 200;
+  const { data: allGifts, isLoading: giftsLoading } = useGifts(category, undefined, maxPrice === Infinity ? undefined : maxPrice, allPerPage);
 
   const { data: giftResults, isLoading: giftSearchLoading } = useQuery({
     queryKey: ['searchGifts', debouncedQuery],
@@ -108,11 +96,10 @@ export default function DiscoverPage() {
     queryFn: () => searchUsers(debouncedQuery),
   });
 
-  const showRecommended = !category && !isSearching && !!recommendedGifts?.length;
-  const displayGifts = showRecommended ? recommendedGifts! : (allGifts ?? []);
+  const displayGifts = allGifts ?? [];
   const isLoading = isSearching
     ? giftSearchLoading || userSearchLoading
-    : giftsLoading || (showRecommended && recLoading);
+    : giftsLoading;
 
   return (
     <div className="max-w-5xl mx-auto px-4 pt-6 pb-8">
@@ -212,7 +199,12 @@ export default function DiscoverPage() {
         </>
       )}
 
-      <GiftModal gift={selected} onClose={() => setSelected(null)} />
+      <GiftModal
+        gift={selected}
+        onClose={() => setSelected(null)}
+        isWishlisted={selected ? wishlistedIds.has(selected.id) : false}
+        onWishlistToggle={selected ? () => handleWishlistToggle(selected) : undefined}
+      />
 
       {/* Floating add button */}
       <button

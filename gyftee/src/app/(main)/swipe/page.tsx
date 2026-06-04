@@ -8,7 +8,7 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useToast } from '@/components/ui/Toast';
 import { getSwipedGiftIds } from '@/services/swipes.service';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Gift, GiftCategory } from '@/types/gift.types';
 import { getUnswipedGifts } from '@/services/gifts.service';
 
@@ -22,6 +22,7 @@ export default function SwipePage() {
   const [loading, setLoading] = useState(true);
   const [deckRevision, setDeckRevision] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshingRef = useRef(false);
 
   const applySort = (unswiped: Gift[], recIds: string[] | undefined, isFallback: boolean) => {
     let interests = new Set<GiftCategory>();
@@ -50,12 +51,15 @@ export default function SwipePage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadGifts();
-  }, [user?.id, rec?.gift_ids]);
+  // Only re-run when the user changes. rec is read from closure: if cached recs are
+  // already available on mount they're used; if not, interests-sort is used and the
+  // user can explicitly refresh via the "Discover Gifts" button once ML resolves.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadGifts(); }, [user?.id]);
 
   const handleRefreshDeck = async () => {
-    if (!user) return;
+    if (!user || refreshingRef.current) return;
+    refreshingRef.current = true;
     setIsRefreshing(true);
     try {
       const res = await fetch('/api/recommendations', {
@@ -72,11 +76,14 @@ export default function SwipePage() {
       if (freshRec?.gift_ids?.length && !freshRec?.fallback) {
         sorted = applySort(unswiped, freshRec.gift_ids, false);
       } else {
-        // ML unavailable — shuffle so the deck actually looks different
-        sorted = [...unswiped];
-        for (let i = sorted.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+        // ML unavailable — sort by interests; if no interests, shuffle
+        sorted = applySort(unswiped, undefined, true);
+        if (sorted === unswiped) {
+          sorted = [...unswiped];
+          for (let i = sorted.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+          }
         }
       }
 
@@ -84,6 +91,7 @@ export default function SwipePage() {
       setDeckRevision((r) => r + 1);
       toast('Deck refreshed!', 'success');
     } finally {
+      refreshingRef.current = false;
       setIsRefreshing(false);
     }
   };

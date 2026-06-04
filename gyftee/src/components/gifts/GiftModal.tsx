@@ -13,9 +13,11 @@ import { CATEGORY_COLORS } from '@/lib/constants';
 interface GiftModalProps {
   gift: Gift | null;
   onClose: () => void;
+  isWishlisted?: boolean;
+  onWishlistToggle?: () => void;
 }
 
-export function GiftModal({ gift, onClose }: GiftModalProps) {
+export function GiftModal({ gift, onClose, isWishlisted, onWishlistToggle }: GiftModalProps) {
   const { toast } = useToast();
 
   const handleShare = async () => {
@@ -98,6 +100,19 @@ export function GiftModal({ gift, onClose }: GiftModalProps) {
               )}
 
               <div className="flex gap-3 pt-1">
+                {onWishlistToggle && (
+                  <button
+                    onClick={onWishlistToggle}
+                    className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl border border-border bg-surface-2 hover:bg-surface-3 active:scale-90 transition-all"
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart
+                      size={16}
+                      className={isWishlisted ? 'fill-current' : 'text-text-dim'}
+                      style={isWishlisted ? { color: '#f87171' } : undefined}
+                    />
+                  </button>
+                )}
                 {gift.store_link && (
                   <a
                     href={gift.store_link}

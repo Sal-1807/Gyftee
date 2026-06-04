@@ -13,7 +13,7 @@ export async function getGifts(
   if (minPrice !== undefined) filters.push(`price >= ${minPrice}`);
   if (maxPrice !== undefined) filters.push(`price <= ${maxPrice}`);
   const result = await client.collection('gifts').getList(page, perPage, {
-    filter: filters.join(' && '),
+    ...(filters.length && { filter: filters.join(' && ') }),
     sort: 'created',
     requestKey: null,
   });
