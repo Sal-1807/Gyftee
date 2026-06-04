@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { getSwipedGiftIds } from '@/services/swipes.service';
 import { useEffect, useState } from 'react';
-import type { Gift } from '@/types/gift.types';
+import type { Gift, GiftCategory } from '@/types/gift.types';
 import { getUnswipedGifts } from '@/services/gifts.service';
 
 export default function SwipePage() {
@@ -26,18 +26,31 @@ export default function SwipePage() {
   const loadGifts = () => {
     if (!user) return;
     setLoading(true);
+
+    let interests = new Set<GiftCategory>();
+    try {
+      const stored = localStorage.getItem(`gyftee_interests_${user.id}`);
+      if (stored) interests = new Set<GiftCategory>(JSON.parse(stored));
+    } catch {}
+
     getSwipedGiftIds(user.id)
       .then((swipedIds) => getUnswipedGifts(swipedIds))
       .then((unswiped) => {
-        // Reorder by ML recommendations if available
         if (rec?.gift_ids?.length && !rec.fallback) {
+          // ML recommendations available — use their order
           const recOrder = new Map(rec.gift_ids.map((id, i) => [id, i]));
-          const sorted = [...unswiped].sort((a, b) => {
+          setGifts([...unswiped].sort((a, b) => {
             const ai = recOrder.get(a.id) ?? 9999;
             const bi = recOrder.get(b.id) ?? 9999;
             return ai - bi;
-          });
-          setGifts(sorted);
+          }));
+        } else if (interests.size > 0) {
+          // ML not ready yet — surface selected-interest categories first
+          setGifts([...unswiped].sort((a, b) => {
+            const aMatch = interests.has(a.category as GiftCategory) ? 0 : 1;
+            const bMatch = interests.has(b.category as GiftCategory) ? 0 : 1;
+            return aMatch - bMatch;
+          }));
         } else {
           setGifts(unswiped);
         }

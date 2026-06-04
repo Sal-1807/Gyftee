@@ -37,6 +37,12 @@ export default function OnboardingPage() {
   const handleStart = async () => {
     if (!user || selected.size === 0) return;
     setLoading(true);
+
+    // Persist selected categories so the swipe deck can prioritise them
+    try {
+      localStorage.setItem(`gyftee_interests_${user.id}`, JSON.stringify(Array.from(selected)));
+    } catch {}
+
     try {
       // Find one gift per selected category and auto-like it to seed ML
       await Promise.all(
