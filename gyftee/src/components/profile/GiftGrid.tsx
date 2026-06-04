@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { X, Heart } from 'lucide-react';
 import type { Gift } from '@/types/gift.types';
 import { GiftModal } from '@/components/gifts/GiftModal';
@@ -47,12 +46,10 @@ export function GiftGrid({ gifts, isLoading, onRemove }: GiftGridProps) {
             className="relative group cursor-pointer rounded-xl overflow-hidden aspect-square bg-surface-2 border border-border"
             onClick={() => setSelected(gift)}
           >
-            <Image
+            <img
               src={getGiftImageUrl(gift)}
               alt={gift.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 33vw, 20vw"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             {/* Hover overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />

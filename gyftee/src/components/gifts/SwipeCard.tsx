@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Heart, X, Sparkles } from 'lucide-react';
+import { Heart, X, Sparkles, Loader2 } from 'lucide-react';
 import type { Gift } from '@/types/gift.types';
 import { getGiftImageUrl } from '@/utils/pocketbase-image';
 import { formatPrice } from '@/utils/format';
@@ -14,9 +13,11 @@ interface SwipeCardProps {
   onSwipe: (direction: SwipeDirection) => void;
   isTop: boolean;
   stackIndex: number;
+  onRefresh?: () => Promise<void>;
+  isRefreshing?: boolean;
 }
 
-export function SwipeCard({ gift, onSwipe, isTop, stackIndex }: SwipeCardProps) {
+export function SwipeCard({ gift, onSwipe, isTop, stackIndex, onRefresh, isRefreshing }: SwipeCardProps) {
   const { x, rotate, likeOpacity, nopeOpacity, controls, flyOut, dragProps } =
     useSwipeGesture({ onSwipe });
 
@@ -61,22 +62,30 @@ export function SwipeCard({ gift, onSwipe, isTop, stackIndex }: SwipeCardProps) 
         </div>
       </motion.div>
 
-      {/* Header pill */}
-      <div className="absolute top-4 inset-x-0 flex justify-center z-10 pointer-events-none">
-        <div className="bg-gray-900 text-white text-xs font-semibold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
-          <Sparkles size={11} className="text-yellow-400" />
-          Discover Gifts
-        </div>
+      {/* Header pill — refresh button */}
+      <div className="absolute top-4 inset-x-0 flex justify-center z-10">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => {
+            if (!onRefresh || isRefreshing) return;
+            onRefresh();
+          }}
+          disabled={isRefreshing}
+          className="bg-gray-900 text-white text-xs font-semibold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-md transition-opacity disabled:opacity-70"
+        >
+          {isRefreshing
+            ? <><Loader2 size={11} className="animate-spin" />Loading...</>
+            : <><Sparkles size={11} className="text-yellow-400" />Discover Gifts</>
+          }
+        </button>
       </div>
 
       {/* Image */}
       <div className="relative h-[58%]">
-        <Image
+        <img
           src={getGiftImageUrl(gift)}
           alt={gift.name}
-          fill
-          className="object-cover"
-          sizes="480px"
+          className="absolute inset-0 w-full h-full object-cover"
           draggable={false}
         />
       </div>

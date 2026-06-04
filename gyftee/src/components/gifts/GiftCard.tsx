@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import type { Gift } from '@/types/gift.types';
 import { getGiftImageUrl } from '@/utils/pocketbase-image';
@@ -26,12 +25,10 @@ export function GiftCard({ gift, onClick, className, isWishlisted, onWishlistTog
     >
       {/* Image */}
       <div className="relative overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
-        <Image
+        <img
           src={getGiftImageUrl(gift)}
           alt={gift.name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 768px) 50vw, 25vw"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {/* Heart icon */}
         <button

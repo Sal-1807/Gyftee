@@ -11,9 +11,11 @@ interface SwipeDeckProps {
   gifts: Gift[];
   onSwipe: (giftId: string, liked: boolean) => void;
   onEmpty?: () => void;
+  onRefresh?: () => Promise<void>;
+  isRefreshing?: boolean;
 }
 
-export function SwipeDeck({ gifts, onSwipe, onEmpty }: SwipeDeckProps) {
+export function SwipeDeck({ gifts, onSwipe, onEmpty, onRefresh, isRefreshing }: SwipeDeckProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleSwipe = useCallback(
@@ -59,6 +61,8 @@ export function SwipeDeck({ gifts, onSwipe, onEmpty }: SwipeDeckProps) {
               onSwipe={handleSwipe}
               isTop={stackIndex === 0}
               stackIndex={stackIndex}
+              onRefresh={stackIndex === 0 ? onRefresh : undefined}
+              isRefreshing={stackIndex === 0 ? isRefreshing : undefined}
             />
           );
         })}

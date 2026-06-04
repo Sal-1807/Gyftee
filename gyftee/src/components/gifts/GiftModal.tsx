@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { X, ExternalLink, Heart, Tag, Share2 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { formatPrice } from '@/utils/format';
@@ -50,12 +49,10 @@ export function GiftModal({ gift, onClose }: GiftModalProps) {
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-lg mx-auto glass-card overflow-hidden"
           >
             <div className="relative h-64">
-              <Image
+              <img
                 src={getGiftImageUrl(gift)}
                 alt={gift.name}
-                fill
-                className="object-cover"
-                sizes="512px"
+                className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <button

@@ -7,7 +7,6 @@ import { SwipeDeck } from '@/components/gifts/SwipeDeck';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useToast } from '@/components/ui/Toast';
-import { useQueryClient } from '@tanstack/react-query';
 import { getSwipedGiftIds } from '@/services/swipes.service';
 import { useEffect, useState } from 'react';
 import type { Gift, GiftCategory } from '@/types/gift.types';
@@ -16,51 +15,78 @@ import { getUnswipedGifts } from '@/services/gifts.service';
 export default function SwipePage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const qc = useQueryClient();
   const { mutate: submitSwipe } = useSubmitSwipe(user?.id ?? '');
   const { data: rec } = useRecommendations(100);
 
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deckRevision, setDeckRevision] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const applySort = (unswiped: Gift[], recIds: string[] | undefined, isFallback: boolean) => {
+    let interests = new Set<GiftCategory>();
+    try {
+      const stored = localStorage.getItem(`gyftee_interests_${user!.id}`);
+      if (stored) interests = new Set<GiftCategory>(JSON.parse(stored));
+    } catch {}
+
+    if (recIds?.length && !isFallback) {
+      const recOrder = new Map(recIds.map((id, i) => [id, i]));
+      return [...unswiped].sort((a, b) => (recOrder.get(a.id) ?? 9999) - (recOrder.get(b.id) ?? 9999));
+    } else if (interests.size > 0) {
+      return [...unswiped].sort((a, b) =>
+        (interests.has(a.category as GiftCategory) ? 0 : 1) - (interests.has(b.category as GiftCategory) ? 0 : 1)
+      );
+    }
+    return unswiped;
+  };
 
   const loadGifts = () => {
     if (!user) return;
     setLoading(true);
-
-    let interests = new Set<GiftCategory>();
-    try {
-      const stored = localStorage.getItem(`gyftee_interests_${user.id}`);
-      if (stored) interests = new Set<GiftCategory>(JSON.parse(stored));
-    } catch {}
-
     getSwipedGiftIds(user.id)
       .then((swipedIds) => getUnswipedGifts(swipedIds))
-      .then((unswiped) => {
-        if (rec?.gift_ids?.length && !rec.fallback) {
-          // ML recommendations available — use their order
-          const recOrder = new Map(rec.gift_ids.map((id, i) => [id, i]));
-          setGifts([...unswiped].sort((a, b) => {
-            const ai = recOrder.get(a.id) ?? 9999;
-            const bi = recOrder.get(b.id) ?? 9999;
-            return ai - bi;
-          }));
-        } else if (interests.size > 0) {
-          // ML not ready yet — surface selected-interest categories first
-          setGifts([...unswiped].sort((a, b) => {
-            const aMatch = interests.has(a.category as GiftCategory) ? 0 : 1;
-            const bMatch = interests.has(b.category as GiftCategory) ? 0 : 1;
-            return aMatch - bMatch;
-          }));
-        } else {
-          setGifts(unswiped);
-        }
-      })
+      .then((unswiped) => setGifts(applySort(unswiped, rec?.gift_ids, !!rec?.fallback)))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     loadGifts();
   }, [user?.id, rec?.gift_ids]);
+
+  const handleRefreshDeck = async () => {
+    if (!user) return;
+    setIsRefreshing(true);
+    try {
+      const res = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, n: 100 }),
+      });
+      const freshRec = res.ok ? await res.json() : null;
+
+      const swipedIds = await getSwipedGiftIds(user.id);
+      const unswiped = await getUnswipedGifts(swipedIds);
+
+      let sorted: Gift[];
+      if (freshRec?.gift_ids?.length && !freshRec?.fallback) {
+        sorted = applySort(unswiped, freshRec.gift_ids, false);
+      } else {
+        // ML unavailable — shuffle so the deck actually looks different
+        sorted = [...unswiped];
+        for (let i = sorted.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+        }
+      }
+
+      setGifts(sorted);
+      setDeckRevision((r) => r + 1);
+      toast('Deck refreshed!', 'success');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleSwipe = (giftId: string, liked: boolean) => {
     if (!user) return;
@@ -79,9 +105,12 @@ export default function SwipePage() {
         <CardSkeleton />
       ) : (
         <SwipeDeck
+          key={deckRevision}
           gifts={gifts}
           onSwipe={handleSwipe}
           onEmpty={loadGifts}
+          onRefresh={handleRefreshDeck}
+          isRefreshing={isRefreshing}
         />
       )}
     </div>

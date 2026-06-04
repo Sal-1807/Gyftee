@@ -25,7 +25,7 @@ import type { AppUser } from '@/types/user.types';
 import { pb } from '@/lib/pocketbase';
 import { AddGiftModal } from '@/components/gifts/AddGiftModal';
 import { PriceSlider } from '@/components/gifts/PriceSlider';
-import { Search, Sparkles, Brain, UserPlus, UserCheck, Plus } from 'lucide-react';
+import { Search, UserPlus, UserCheck, Plus } from 'lucide-react';
 
 const MAX_PRICE_INR = 7000;
 
@@ -180,32 +180,6 @@ export default function DiscoverPage() {
         </>
       ) : (
         <>
-          {/* ML info card */}
-          {rec && !rec.fallback && (
-            <div className="glass-card p-4 mb-5 flex items-start gap-3">
-              <Brain size={18} className="text-primary-light mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <span className="font-medium text-text">
-                  {rec.user_swipe_count < 5
-                    ? 'Showing all gifts — swipe more for personalised picks'
-                    : `Personalised for you · ${rec.user_swipe_count} swipes`}
-                </span>
-                {rec.user_swipe_count >= 5 && (
-                  <div className="text-text-muted mt-1 flex items-center gap-3">
-                    <span className="flex items-center gap-1.5">
-                      <Sparkles size={11} />
-                      Content match {Math.round((rec.model_weights.content ?? 0) * 100)}%
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Sparkles size={11} />
-                      Collaborative {Math.round((rec.model_weights.collab ?? 0) * 100)}%
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <div className="mb-3">
             <CategoryFilter selected={category} onChange={setCategory} />
           </div>

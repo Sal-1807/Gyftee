@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useFeed } from '@/hooks/useFeed';
@@ -51,7 +50,7 @@ export default function FeedPage() {
       )}
 
       {mounted && !isLoading && swipes && swipes.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {swipes.map((swipe) => {
             const swipeUser = swipe.expand?.user as AppUser | undefined;
             const gift = swipe.expand?.gift as Gift | undefined;
@@ -59,7 +58,7 @@ export default function FeedPage() {
 
             return (
               <div key={swipe.id} className="glass-card overflow-hidden">
-                <div className="p-4 flex items-center gap-3">
+                <div className="p-3 flex items-center gap-2.5">
                   {swipeUser && (
                     <Link href={`/profile/${swipeUser.username}`}>
                       <Avatar
@@ -79,8 +78,8 @@ export default function FeedPage() {
                     <p className="text-xs text-text-dim">{timeAgo(swipe.updated)}</p>
                   </div>
                   {swipe.liked
-                    ? <Heart size={14} className="text-accent flex-shrink-0" />
-                    : <HeartOff size={14} className="text-text-muted flex-shrink-0" />
+                    ? <Heart size={13} className="text-accent flex-shrink-0" />
+                    : <HeartOff size={13} className="text-text-muted flex-shrink-0" />
                   }
                 </div>
 
@@ -88,16 +87,15 @@ export default function FeedPage() {
                   onClick={() => setSelected(gift)}
                   className="w-full text-left"
                 >
-                  <div className="relative h-48 mx-4 mb-4 rounded-xl overflow-hidden">
-                    <Image
+                  <div className="relative h-32 mx-3 mb-3 rounded-xl overflow-hidden">
+                    <img
                       src={getGiftImageUrl(gift)}
                       alt={gift.name}
-                      fill
-                      className="object-cover"
-                      sizes="560px"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
                       <p className="font-semibold text-white text-sm">{gift.name}</p>
                       <span className="text-sm font-bold" style={{ color: '#1bbf96' }}>
                         {formatPrice(gift.price)}
