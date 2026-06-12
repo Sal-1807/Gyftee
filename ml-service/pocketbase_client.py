@@ -11,45 +11,52 @@ On a 401 we re-authenticate once and retry (handles token expiry).
 
 import os
 import httpx
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Explicit path so the .env is found regardless of working directory.
+load_dotenv(Path(__file__).parent / ".env")
 
 PB_URL = os.getenv("POCKETBASE_URL", "http://127.0.0.1:8090")
 
-# Shared async client with a reasonable timeout.
-# We create it at module level so it's reused across requests (connection pooling).
+# Shared async client — reused across requests for connection pooling.
 _client = httpx.AsyncClient(timeout=10.0)
-
 _admin_token: str | None = None
 
 
 async def _authenticate() -> None:
-    """Fetch a fresh admin token and cache it in _admin_token."""
+    """Fetch a fresh admin token and cache it."""
     global _admin_token
     email = os.getenv("POCKETBASE_ADMIN_EMAIL", "")
     password = os.getenv("POCKETBASE_ADMIN_PASSWORD", "")
+    if not email:
+        raise RuntimeError("POCKETBASE_ADMIN_EMAIL is not set — check ml-service/.env")
     resp = await _client.post(
         f"{PB_URL}/api/admins/auth-with-password",
         json={"identity": email, "password": password},
     )
-    resp.raise_for_status()
+    if not resp.is_success:
+        raise RuntimeError(
+            f"PocketBase admin auth failed: HTTP {resp.status_code} — {resp.text[:300]}"
+        )
     _admin_token = resp.json()["token"]
+    print(f"[PB] Admin authenticated ({email}), token: {_admin_token[:20]}...")
 
 
 async def _auth_headers() -> dict[str, str]:
     """Return Authorization header, authenticating lazily if needed."""
-    global _admin_token
     if not _admin_token:
         await _authenticate()
-    return {"Authorization": f"Bearer {_admin_token}"}
+    # PocketBase expects the raw JWT — no "Bearer" prefix for admin tokens.
+    return {"Authorization": _admin_token}  # type: ignore[return-value]
 
 
 async def _authed_get(url: str, params: dict | None = None) -> httpx.Response:
     """GET with admin auth. Retries once on 401 to handle token expiry."""
+    global _admin_token
     resp = await _client.get(url, params=params, headers=await _auth_headers())
     if resp.status_code == 401:
-        await _authenticate()
+        _admin_token = None  # force re-auth on retry
         resp = await _client.get(url, params=params, headers=await _auth_headers())
     return resp
 

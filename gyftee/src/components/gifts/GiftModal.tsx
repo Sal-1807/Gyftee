@@ -1,6 +1,6 @@
 'use client';
 
-import { X, ExternalLink, Heart, Tag, Share2 } from 'lucide-react';
+import { X, ExternalLink, Heart, Tag, Share2, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { formatPrice } from '@/utils/format';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,9 +15,10 @@ interface GiftModalProps {
   onClose: () => void;
   isWishlisted?: boolean;
   onWishlistToggle?: () => void;
+  onRemove?: () => void;
 }
 
-export function GiftModal({ gift, onClose, isWishlisted, onWishlistToggle }: GiftModalProps) {
+export function GiftModal({ gift, onClose, isWishlisted, onWishlistToggle, onRemove }: GiftModalProps) {
   const { toast } = useToast();
 
   const handleShare = async () => {
@@ -99,37 +100,45 @@ export function GiftModal({ gift, onClose, isWishlisted, onWishlistToggle }: Gif
                 </div>
               )}
 
-              <div className="flex gap-3 pt-1">
-                {onWishlistToggle && (
-                  <button
-                    onClick={onWishlistToggle}
-                    className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl border border-border bg-surface-2 hover:bg-surface-3 active:scale-90 transition-all"
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                  >
-                    <Heart
-                      size={16}
-                      className={isWishlisted ? 'fill-current' : 'text-text-dim'}
-                      style={isWishlisted ? { color: '#f87171' } : undefined}
-                    />
-                  </button>
-                )}
+              <div className="space-y-3 pt-1">
+                <div className="flex gap-3">
+                  {onWishlistToggle && (
+                    <button
+                      onClick={onWishlistToggle}
+                      className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl border border-border bg-surface-2 hover:bg-surface-3 active:scale-90 transition-all"
+                      aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                    >
+                      <Heart
+                        size={16}
+                        className={isWishlisted ? 'fill-current' : 'text-text-dim'}
+                        style={isWishlisted ? { color: '#f87171' } : undefined}
+                      />
+                    </button>
+                  )}
+                  <Button variant="secondary" size="md" onClick={handleShare}>
+                    <Share2 size={14} />
+                    Share
+                  </Button>
+                </div>
                 {gift.store_link && (
                   <a
                     href={gift.store_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1"
+                    className="block"
                   >
-                    <Button fullWidth variant="primary" size="md">
-                      <ExternalLink size={14} />
-                      Buy Now
+                    <Button fullWidth variant="primary" size="lg">
+                      <ExternalLink size={15} />
+                      View on Store
                     </Button>
                   </a>
                 )}
-                <Button variant="secondary" size="md" onClick={handleShare}>
-                  <Share2 size={14} />
-                  Share
-                </Button>
+                {onRemove && (
+                  <Button fullWidth variant="danger" size="md" onClick={onRemove}>
+                    <Trash2 size={14} />
+                    Remove from Wishlist
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>

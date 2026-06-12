@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL ?? 'http://127.0.0.1:8000';
 
 export async function POST(req: NextRequest) {
-  const { userId, n = 20 } = await req.json();
+  const { userId, n = 20, interests = [] } = await req.json();
 
   if (!userId) {
     return NextResponse.json({ error: 'userId required' }, { status: 400 });
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${ML_SERVICE_URL}/recommendations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, n }),
+      body: JSON.stringify({ user_id: userId, n, interests }),
       signal: AbortSignal.timeout(5000),
     });
 

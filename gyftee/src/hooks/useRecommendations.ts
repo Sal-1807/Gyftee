@@ -16,10 +16,16 @@ export function useRecommendations(n = 20) {
     enabled: !!user,
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
+      let interests: string[] = [];
+      try {
+        const stored = localStorage.getItem(`gyftee_interests_${user!.id}`);
+        if (stored) interests = JSON.parse(stored);
+      } catch {}
+
       const res = await fetch('/api/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user!.id, n }),
+        body: JSON.stringify({ userId: user!.id, n, interests }),
       });
       if (!res.ok) throw new Error('Failed to fetch recommendations');
       return res.json();

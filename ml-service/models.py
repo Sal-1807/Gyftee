@@ -14,6 +14,7 @@ class RecommendationRequest(BaseModel):
 
     user_id: str = Field(..., description="PocketBase user record ID")
     n: int = Field(default=20, ge=1, le=100, description="Number of recommendations to return")
+    interests: list[str] = Field(default=[], description="Onboarding categories, used for cold-start ordering")
 
 
 class RecommendationResponse(BaseModel):

@@ -67,7 +67,7 @@ export function GiftGrid({ gifts, isLoading, onRemove, viewerWishlistedIds, onVi
                 className={cn(
                   'absolute top-1.5 right-1.5 w-6 h-6 bg-white/90 rounded-full',
                   'flex items-center justify-center text-red-400',
-                  'opacity-0 group-hover:opacity-100 transition-opacity shadow-sm',
+                  'md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-sm',
                   'hover:bg-red-50 active:scale-90'
                 )}
                 aria-label="Remove from wishlist"
@@ -102,6 +102,7 @@ export function GiftGrid({ gifts, isLoading, onRemove, viewerWishlistedIds, onVi
         onClose={() => setSelected(null)}
         isWishlisted={selected && onViewerWishlistToggle ? viewerWishlistedIds?.has(selected.id) : undefined}
         onWishlistToggle={selected && onViewerWishlistToggle ? () => onViewerWishlistToggle(selected.id) : undefined}
+        onRemove={selected && onRemove ? () => { onRemove(selected.id); setSelected(null); } : undefined}
       />
     </>
   );

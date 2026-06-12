@@ -62,10 +62,16 @@ export default function SwipePage() {
     refreshingRef.current = true;
     setIsRefreshing(true);
     try {
+      let interests: string[] = [];
+      try {
+        const stored = localStorage.getItem(`gyftee_interests_${user.id}`);
+        if (stored) interests = JSON.parse(stored);
+      } catch {}
+
       const res = await fetch('/api/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, n: 100 }),
+        body: JSON.stringify({ userId: user.id, n: 100, interests }),
       });
       const freshRec = res.ok ? await res.json() : null;
 

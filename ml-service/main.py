@@ -12,6 +12,7 @@ Run locally:
 The --reload flag restarts the server automatically when you edit Python files.
 """
 
+import asyncio
 import random
 from contextlib import asynccontextmanager
 
@@ -31,8 +32,30 @@ from pocketbase_client import fetch_all_gifts, fetch_all_swipes, fetch_user_swip
 # In production systems this is called "model serving."
 
 recommender = HybridRecommender()
-_all_gift_ids: list[str] = []   # Used for cold-start random shuffle
+_all_gift_ids: list[str] = []        # Used for cold-start ordering
+_gift_category_map: dict[str, str] = {}  # gift_id → category, for interest-aware cold start
 _total_swipes: int = 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Background auto-retrain
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def _auto_retrain_loop() -> None:
+    """Retrains models every 30 minutes so new swipes are picked up automatically."""
+    global _all_gift_ids, _gift_category_map, _total_swipes
+    while True:
+        await asyncio.sleep(1800)  # 30 minutes
+        try:
+            gifts = await fetch_all_gifts()
+            swipes = await fetch_all_swipes()
+            _all_gift_ids = [g["id"] for g in gifts]
+            _gift_category_map = {g["id"]: g.get("category", "") for g in gifts}
+            _total_swipes = len(swipes)
+            recommender.fit(gifts, swipes)
+            print(f"[Gyftee ML] Auto-retrain complete — {len(gifts)} gifts, {len(swipes)} swipes")
+        except Exception as e:
+            print(f"[Gyftee ML] Auto-retrain failed: {e}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -57,7 +80,7 @@ async def lifespan(app: FastAPI):
     Note: If PocketBase isn't running yet, this will print a warning and
     the models will be untrained. Restart the ML service after PocketBase is up.
     """
-    global _all_gift_ids, _total_swipes
+    global _all_gift_ids, _gift_category_map, _total_swipes
 
     print("[Gyftee ML] Starting up — fetching training data from PocketBase...")
 
@@ -66,6 +89,7 @@ async def lifespan(app: FastAPI):
         swipes = await fetch_all_swipes()
 
         _all_gift_ids = [g["id"] for g in gifts]
+        _gift_category_map = {g["id"]: g.get("category", "") for g in gifts}
         _total_swipes = len(swipes)
 
         print(f"[Gyftee ML] Training on {len(gifts)} gifts and {len(swipes)} swipes...")
@@ -79,9 +103,15 @@ async def lifespan(app: FastAPI):
         print("[Gyftee ML] Service is up but running in cold-start mode.")
         print("[Gyftee ML] Restart after PocketBase is running to train the models.")
 
+    retrain_task = asyncio.create_task(_auto_retrain_loop())
+
     yield  # ← server runs while we're here
 
-    # Shutdown: nothing to clean up (Python GC handles memory)
+    retrain_task.cancel()
+    try:
+        await retrain_task
+    except asyncio.CancelledError:
+        pass
     print("[Gyftee ML] Shutting down.")
 
 
@@ -152,11 +182,21 @@ async def get_recommendations(req: RecommendationRequest):
 
     # ── Cold start: no swipe history at all ───────────────────────────────────
     if total_swipes == 0:
-        # Return a random shuffle of all gifts — gives new users variety
-        shuffled = _all_gift_ids.copy()
-        random.shuffle(shuffled)
+        if req.interests:
+            # Put gifts whose category matches an onboarding interest first,
+            # then fill the rest in random order.
+            interest_set = set(req.interests)
+            matched = [gid for gid in _all_gift_ids if _gift_category_map.get(gid) in interest_set]
+            others  = [gid for gid in _all_gift_ids if _gift_category_map.get(gid) not in interest_set]
+            random.shuffle(matched)
+            random.shuffle(others)
+            cold_ids = (matched + others)[: req.n]
+        else:
+            shuffled = _all_gift_ids.copy()
+            random.shuffle(shuffled)
+            cold_ids = shuffled[: req.n]
         return RecommendationResponse(
-            gift_ids=shuffled[: req.n],
+            gift_ids=cold_ids,
             model_weights={"content": 1.0, "collab": 0.0},
             user_swipe_count=0,
         )
@@ -190,11 +230,12 @@ async def retrain():
     Call this after adding new gifts or after a burst of swipe activity
     to refresh the collaborative filtering matrix without restarting the server.
     """
-    global _all_gift_ids, _total_swipes
+    global _all_gift_ids, _gift_category_map, _total_swipes
     try:
         gifts = await fetch_all_gifts()
         swipes = await fetch_all_swipes()
         _all_gift_ids = [g["id"] for g in gifts]
+        _gift_category_map = {g["id"]: g.get("category", "") for g in gifts}
         _total_swipes = len(swipes)
         recommender.fit(gifts, swipes)
         return {"status": "ok", "gifts": len(gifts), "swipes": len(swipes)}
