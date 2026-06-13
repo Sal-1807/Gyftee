@@ -32,7 +32,7 @@ async def _authenticate() -> None:
     if not email:
         raise RuntimeError("POCKETBASE_ADMIN_EMAIL is not set — check ml-service/.env")
     resp = await _client.post(
-        f"{PB_URL}/api/admins/auth-with-password",
+        f"{PB_URL}/api/collections/_superusers/auth-with-password",
         json={"identity": email, "password": password},
     )
     if not resp.is_success:
