@@ -13,11 +13,15 @@ The --reload flag restarts the server automatically when you edit Python files.
 """
 
 import asyncio
+import os
 import random
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv()
 
 from models import RecommendationRequest, RecommendationResponse, ModelInfoResponse
 from recommendations import HybridRecommender
@@ -127,12 +131,14 @@ app = FastAPI(
 )
 
 # CORS: allow requests from the Next.js dev server and Vercel production URL
+_frontend_url = os.getenv("FRONTEND_URL", "https://gyftee.vercel.app")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://gyftee.vercel.app",
+        _frontend_url,
     ],
     allow_methods=["GET", "POST"],
     allow_headers=["*"],

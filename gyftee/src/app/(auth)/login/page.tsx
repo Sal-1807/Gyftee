@@ -54,7 +54,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/swipe';
+  const redirect = searchParams.get('next') ?? '/swipe';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
