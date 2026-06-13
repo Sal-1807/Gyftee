@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -45,7 +45,7 @@ function FieldInput({ icon, ...props }: { icon: React.ReactNode } & React.InputH
   );
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -69,6 +69,70 @@ export default function LoginPage() {
   };
 
   return (
+    <>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+        <div>
+          <FieldLabel>Email</FieldLabel>
+          <FieldInput
+            icon={
+              <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
+                <rect x="0.75" y="0.75" width="15.5" height="11.5" rx="2.25" stroke="#7B9490" strokeWidth="1.5"/>
+                <path d="M1 1.5L8.5 7.5L16 1.5" stroke="#7B9490" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            }
+            type="email"
+            placeholder="hello@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <FieldLabel>Password</FieldLabel>
+          <FieldInput
+            icon={
+              <svg width="13" height="17" viewBox="0 0 13 17" fill="none">
+                <rect x="0.75" y="7.25" width="11.5" height="9" rx="2.25" stroke="#7B9490" strokeWidth="1.5"/>
+                <path d="M3 7V4.5a3.5 3.5 0 017 0V7" stroke="#7B9490" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="6.5" cy="12" r="1.5" fill="#7B9490"/>
+              </svg>
+            }
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div className="flex justify-end mt-2.5">
+            <button type="button" className="text-[13px] font-semibold" style={{ color: '#2CC4A0' }}>
+              Forgot password?
+            </button>
+          </div>
+        </div>
+
+        {error && <p className="text-xs text-error">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full h-14 rounded-[14px] text-[17px] font-bold text-white mt-1 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+          style={{ background: '#2CC4A0', boxShadow: '0 4px 18px rgba(44,196,160,0.32)' }}
+        >
+          {isLoading ? 'Signing in…' : 'Sign In'}
+        </button>
+      </form>
+
+      <p className="text-center mt-7 text-[14px]" style={{ color: '#7B9490' }}>
+        Don&apos;t have an account?{' '}
+        <Link href="/signup" className="font-bold" style={{ color: '#2CC4A0' }}>Sign up</Link>
+      </p>
+    </>
+  );
+}
+
+export default function LoginPage() {
+  return (
     <div className="w-full flex flex-col bg-white min-h-screen">
       {/* Header */}
       <div className="px-6 pt-5 flex items-center gap-3.5 flex-shrink-0">
@@ -91,63 +155,9 @@ export default function LoginPage() {
           <span className="text-[20px] font-extrabold tracking-[-0.4px]" style={{ color: '#182622' }}>Gyftee</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
-          <div>
-            <FieldLabel>Email</FieldLabel>
-            <FieldInput
-              icon={
-                <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
-                  <rect x="0.75" y="0.75" width="15.5" height="11.5" rx="2.25" stroke="#7B9490" strokeWidth="1.5"/>
-                  <path d="M1 1.5L8.5 7.5L16 1.5" stroke="#7B9490" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              }
-              type="email"
-              placeholder="hello@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <FieldLabel>Password</FieldLabel>
-            <FieldInput
-              icon={
-                <svg width="13" height="17" viewBox="0 0 13 17" fill="none">
-                  <rect x="0.75" y="7.25" width="11.5" height="9" rx="2.25" stroke="#7B9490" strokeWidth="1.5"/>
-                  <path d="M3 7V4.5a3.5 3.5 0 017 0V7" stroke="#7B9490" strokeWidth="1.5" strokeLinecap="round"/>
-                  <circle cx="6.5" cy="12" r="1.5" fill="#7B9490"/>
-                </svg>
-              }
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <div className="flex justify-end mt-2.5">
-              <button type="button" className="text-[13px] font-semibold" style={{ color: '#2CC4A0' }}>
-                Forgot password?
-              </button>
-            </div>
-          </div>
-
-          {error && <p className="text-xs text-error">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-14 rounded-[14px] text-[17px] font-bold text-white mt-1 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-            style={{ background: '#2CC4A0', boxShadow: '0 4px 18px rgba(44,196,160,0.32)' }}
-          >
-            {isLoading ? 'Signing in…' : 'Sign In'}
-          </button>
-        </form>
-
-        <p className="text-center mt-7 text-[14px]" style={{ color: '#7B9490' }}>
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="font-bold" style={{ color: '#2CC4A0' }}>Sign up</Link>
-        </p>
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );
