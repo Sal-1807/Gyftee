@@ -43,7 +43,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           fullWidth && 'w-full',
           className
         )}
-        style={isPrimary ? { backgroundColor: '#1bbf96', ...style } : style}
+        style={isPrimary ? { backgroundColor: '#2CC4A0', ...style } : style}
         {...props}
       >
         {loading && (

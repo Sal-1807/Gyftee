@@ -46,7 +46,7 @@ export function ProfileHeader({ user, followersCount, followingCount, likedCount
       <div>
         <h1 className="text-xl font-bold text-text">{user.name || user.username}</h1>
         {user.name && (
-          <p className="text-sm mt-0.5" style={{ color: '#f87171' }}>
+          <p className="text-sm mt-0.5" className="text-text-muted">
             @{user.username}
           </p>
         )}
@@ -86,7 +86,7 @@ export function ProfileHeader({ user, followersCount, followingCount, likedCount
             className={`py-3 ${onClick ? 'cursor-pointer hover:bg-surface-2 transition-colors rounded-xl' : ''}`}
             onClick={onClick}
           >
-            <p className="text-xl font-bold" style={{ color: '#1bbf96' }}>{value}</p>
+            <p className="text-xl font-bold" style={{ color: '#2CC4A0' }}>{value}</p>
             <p className="text-xs text-text-muted mt-0.5">{label}</p>
           </div>
         ))}

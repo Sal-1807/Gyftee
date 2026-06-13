@@ -57,7 +57,7 @@ export function GiftGrid({ gifts, isLoading, onRemove, viewerWishlistedIds, onVi
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
             <div className="absolute bottom-0 inset-x-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
               <p className="text-white text-[10px] font-semibold truncate drop-shadow">{gift.name}</p>
-              <p className="text-[10px] font-bold drop-shadow" style={{ color: '#1bbf96' }}>{formatPrice(gift.price)}</p>
+              <p className="text-[10px] font-bold drop-shadow" style={{ color: '#2CC4A0' }}>{formatPrice(gift.price)}</p>
             </div>
 
             {/* Remove button (own profile) */}
@@ -90,7 +90,7 @@ export function GiftGrid({ gifts, isLoading, onRemove, viewerWishlistedIds, onVi
                 <Heart
                   size={11}
                   className={viewerWishlistedIds?.has(gift.id) ? 'fill-current' : 'text-text-dim'}
-                  style={viewerWishlistedIds?.has(gift.id) ? { color: '#f87171' } : undefined}
+                  style={viewerWishlistedIds?.has(gift.id) ? { color: '#FF6B9D' } : undefined}
                 />
               </button>
             )}

@@ -67,7 +67,7 @@ export function GiftModal({ gift, onClose, isWishlisted, onWishlistToggle, onRem
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-end justify-between gap-2">
                   <h2 className="text-xl font-bold text-white leading-tight">{gift.name}</h2>
-                  <span className="text-xl font-bold flex-shrink-0" style={{ color: '#1bbf96' }}>
+                  <span className="text-xl font-bold flex-shrink-0" style={{ color: '#2CC4A0' }}>
                     {formatPrice(gift.price)}
                   </span>
                 </div>
@@ -111,7 +111,7 @@ export function GiftModal({ gift, onClose, isWishlisted, onWishlistToggle, onRem
                       <Heart
                         size={16}
                         className={isWishlisted ? 'fill-current' : 'text-text-dim'}
-                        style={isWishlisted ? { color: '#f87171' } : undefined}
+                        style={isWishlisted ? { color: '#FF6B9D' } : undefined}
                       />
                     </button>
                   )}

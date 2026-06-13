@@ -1,14 +1,19 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 import './globals.css';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Gyftee — Discover gifts you actually want',
   description: 'Swipe through curated gifts and build your wishlist. Share with friends who actually get you.',
   manifest: '/manifest.json',
+  icons: { icon: '/icon-512.png', apple: '/icon-192.png' },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -17,12 +22,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#8b5cf6',
+  themeColor: '#2CC4A0',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" className={`${dmSans.variable} h-full`}>
       <body className="h-full antialiased">{children}</body>
     </html>
   );

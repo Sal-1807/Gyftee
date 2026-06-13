@@ -97,7 +97,7 @@ export default function FeedPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
                       <p className="font-semibold text-white text-sm">{gift.name}</p>
-                      <span className="text-sm font-bold" style={{ color: '#1bbf96' }}>
+                      <span className="text-sm font-bold" style={{ color: '#2CC4A0' }}>
                         {formatPrice(gift.price)}
                       </span>
                     </div>

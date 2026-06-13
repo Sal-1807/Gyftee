@@ -124,9 +124,9 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
           <div className="flex flex-col items-center justify-center py-14 gap-4 text-center">
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: '#edfaf5', border: '1px solid #c8dfd6' }}
+              style={{ backgroundColor: '#EAF7F1', border: '1px solid #B8DDD4' }}
             >
-              <Lock size={22} style={{ color: '#1bbf96' }} />
+              <Lock size={22} style={{ color: '#2CC4A0' }} />
             </div>
             <div>
               <p className="font-semibold text-text">Follow to see their wishlist</p>

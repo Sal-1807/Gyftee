@@ -5,8 +5,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <Providers>
       <ToastProvider>
-        <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
-          {children}
+        <div className="min-h-screen flex items-center justify-center relative z-10">
+          <div className="w-full max-w-sm">
+            {children}
+          </div>
         </div>
       </ToastProvider>
     </Providers>

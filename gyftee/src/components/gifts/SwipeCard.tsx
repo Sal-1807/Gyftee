@@ -49,8 +49,8 @@ export function SwipeCard({ gift, onSwipe, isTop, stackIndex, onRefresh, isRefre
         style={{ opacity: likeOpacity }}
         className="absolute top-6 left-6 z-20 pointer-events-none"
       >
-        <div className="border-4 rounded-xl px-4 py-1.5 rotate-[-15deg]" style={{ borderColor: '#1bbf96' }}>
-          <span className="text-2xl font-black tracking-wider" style={{ color: '#1bbf96' }}>LIKE</span>
+        <div className="border-4 rounded-xl px-4 py-1.5 rotate-[-15deg]" style={{ borderColor: '#2CC4A0' }}>
+          <span className="text-2xl font-black tracking-wider" style={{ color: '#2CC4A0' }}>LIKE</span>
         </div>
       </motion.div>
       <motion.div
@@ -62,7 +62,7 @@ export function SwipeCard({ gift, onSwipe, isTop, stackIndex, onRefresh, isRefre
         </div>
       </motion.div>
 
-      {/* Header pill — refresh button */}
+      {/* Discover Gifts pill */}
       <div className="absolute top-4 inset-x-0 flex justify-center z-10">
         <button
           onPointerDown={(e) => e.stopPropagation()}
@@ -71,11 +71,12 @@ export function SwipeCard({ gift, onSwipe, isTop, stackIndex, onRefresh, isRefre
             onRefresh();
           }}
           disabled={isRefreshing}
-          className="bg-gray-900 text-white text-xs font-semibold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-md transition-opacity disabled:opacity-70"
+          className="text-white text-xs font-semibold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-md transition-opacity disabled:opacity-70"
+          style={{ background: '#182622' }}
         >
           {isRefreshing
             ? <><Loader2 size={11} className="animate-spin" />Loading...</>
-            : <><Sparkles size={11} className="text-yellow-400" />Discover Gifts</>
+            : <><span style={{ color: '#2CC4A0' }}>✦</span>Discover Gifts</>
           }
         </button>
       </div>
@@ -96,12 +97,13 @@ export function SwipeCard({ gift, onSwipe, isTop, stackIndex, onRefresh, isRefre
         <div className="flex items-center gap-2 flex-wrap">
           <span
             className="text-xs font-bold px-3 py-1 rounded-full text-white"
-            style={{ backgroundColor: '#1bbf96' }}
+            style={{ backgroundColor: '#2CC4A0' }}
           >
             {formatPrice(gift.price)}
           </span>
-          <span className="text-xs font-medium px-3 py-1 rounded-full border"
-            style={{ backgroundColor: '#edfaf5', borderColor: '#c8dfd6', color: '#1bbf96' }}
+          <span
+            className="text-xs font-medium px-3 py-1 rounded-full border"
+            style={{ backgroundColor: '#EAF7F1', borderColor: '#B8DDD4', color: '#2CC4A0' }}
           >
             {gift.category}
           </span>
@@ -115,18 +117,19 @@ export function SwipeCard({ gift, onSwipe, isTop, stackIndex, onRefresh, isRefre
       <div className="absolute bottom-5 inset-x-0 flex items-center justify-center gap-8">
         <button
           onClick={() => flyOut('left')}
-          className="w-14 h-14 bg-white rounded-full border border-border shadow-md flex items-center justify-center text-text-muted hover:bg-surface-2 active:scale-90 transition-all"
+          className="w-[62px] h-[62px] bg-white rounded-full flex items-center justify-center text-text-muted hover:bg-surface-2 active:scale-90 transition-all"
+          style={{ border: '1.5px solid #D5EDE7', boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
           aria-label="Dislike"
         >
-          <X size={22} />
+          <X size={20} strokeWidth={2.2} style={{ color: '#7B9490' }} />
         </button>
         <button
           onClick={() => flyOut('right')}
-          className="w-14 h-14 rounded-full shadow-md flex items-center justify-center active:scale-90 transition-all"
-          style={{ backgroundColor: '#fda4a4' }}
+          className="w-[62px] h-[62px] rounded-full flex items-center justify-center active:scale-90 transition-all"
+          style={{ backgroundColor: '#FF6B9D', boxShadow: '0 6px 22px rgba(255,107,157,0.44)' }}
           aria-label="Like"
         >
-          <Heart size={22} className="text-white" fill="white" />
+          <Heart size={23} className="text-white" fill="white" />
         </button>
       </div>
     </motion.div>

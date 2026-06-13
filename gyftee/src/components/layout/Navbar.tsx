@@ -18,8 +18,8 @@ export function Navbar() {
   return (
     <header className="hidden md:flex bg-white border-b border-border sticky top-0 z-40 h-16 items-center px-6 shadow-sm">
       <Link href="/" className="flex items-center gap-2 font-bold text-lg mr-8">
-        <span className="text-2xl">🎁</span>
-        <span className="font-black" style={{ color: '#1bbf96' }}>gyftee</span>
+        <img src="/icon-192.png" width={32} height={32} alt="Gyftee" className="rounded-lg" />
+        <span className="font-black" style={{ color: '#2CC4A0' }}>gyftee</span>
       </Link>
 
       <nav className="flex items-center gap-1 flex-1">
@@ -37,7 +37,7 @@ export function Navbar() {
                 'px-4 py-2 rounded-full text-sm font-medium transition-colors',
                 active ? 'text-white' : 'text-text-muted hover:text-text hover:bg-surface-2'
               )}
-              style={active ? { backgroundColor: '#1bbf96' } : {}}
+              style={active ? { backgroundColor: '#2CC4A0' } : {}}
             >
               {label}
             </Link>

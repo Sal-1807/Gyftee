@@ -25,7 +25,7 @@ export function PriceSlider({ maxPrice, onMaxPriceChange, absoluteMax = 7000 }: 
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-text-muted">Budget</span>
-        <span className="text-xs font-semibold" style={{ color: '#1bbf96' }}>
+        <span className="text-xs font-semibold" style={{ color: '#2CC4A0' }}>
           {isAll ? 'Any price' : `Under ${formatPrice(maxPrice)}`}
         </span>
       </div>
@@ -43,7 +43,7 @@ export function PriceSlider({ maxPrice, onMaxPriceChange, absoluteMax = 7000 }: 
           }}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none"
           style={{
-            background: `linear-gradient(to right, #1bbf96 0%, #1bbf96 ${pct}%, #e2ede8 ${pct}%, #e2ede8 100%)`,
+            background: `linear-gradient(to right, #2CC4A0 0%, #2CC4A0 ${pct}%, #D5EDE7 ${pct}%, #D5EDE7 100%)`,
           }}
         />
       </div>
@@ -64,8 +64,8 @@ export function PriceSlider({ maxPrice, onMaxPriceChange, absoluteMax = 7000 }: 
               onClick={() => onMaxPriceChange(val)}
               className="px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-all"
               style={active
-                ? { backgroundColor: '#f9a8b4', color: '#fff', borderColor: '#f9a8b4' }
-                : { backgroundColor: '#fff', color: '#6b7280', borderColor: '#e2ede8' }}
+                ? { backgroundColor: '#FF6B9D', color: '#fff', borderColor: '#FF6B9D' }
+                : { backgroundColor: '#fff', color: '#7B9490', borderColor: '#D5EDE7' }}
             >
               {label}
             </button>

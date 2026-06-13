@@ -39,7 +39,7 @@ export function GiftCard({ gift, onClick, className, isWishlisted, onWishlistTog
           <Heart
             size={14}
             className={isWishlisted ? 'fill-current' : 'text-text-dim'}
-            style={isWishlisted ? { color: '#f87171' } : undefined}
+            style={isWishlisted ? { color: '#FF6B9D' } : undefined}
           />
         </button>
       </div>
@@ -50,7 +50,7 @@ export function GiftCard({ gift, onClick, className, isWishlisted, onWishlistTog
           {gift.name}
         </h3>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-bold" style={{ color: '#1bbf96' }}>
+          <span className="text-sm font-bold" style={{ color: '#2CC4A0' }}>
             {formatPrice(gift.price)}
           </span>
           <span className="text-xs text-text-dim truncate">{gift.category}</span>
