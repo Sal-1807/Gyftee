@@ -46,7 +46,7 @@ export function ProfileHeader({ user, followersCount, followingCount, likedCount
       <div>
         <h1 className="text-xl font-bold text-text">{user.name || user.username}</h1>
         {user.name && (
-          <p className="text-sm mt-0.5" className="text-text-muted">
+          <p className="text-sm mt-0.5 text-text-muted">
             @{user.username}
           </p>
         )}

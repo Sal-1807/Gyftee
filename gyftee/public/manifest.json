@@ -2,11 +2,11 @@
   "name": "Gyftee",
   "short_name": "Gyftee",
   "description": "Discover gifts you actually want. Swipe, like, and share your wishlist.",
-  "start_url": "/swipe",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0a0f",
-  "theme_color": "#8b5cf6",
+  "background_color": "#EAF7F1",
+  "theme_color": "#2CC4A0",
   "icons": [
     {
       "src": "/icon-192.png",
