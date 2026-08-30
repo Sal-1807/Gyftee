@@ -558,4 +558,8 @@ Built as a full-stack application combining:
 
 ## 📄 License
 
-This project is currently intended as an academic/project submission.
+Gyftee is currently under active development.
+
+This repository is publicly available for project evaluation and
+educational reference. Licensing and usage terms may be updated
+as Gyftee evolves toward a public product.
