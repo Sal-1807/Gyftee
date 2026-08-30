@@ -22,6 +22,7 @@ export async function getLikedGifts(
     filter: `user = "${userId}" && liked = true`,
     expand: 'gift',
     sort: '-created',
+    requestKey: null,
   });
   return swipes
     .map((s) => s.expand?.gift)

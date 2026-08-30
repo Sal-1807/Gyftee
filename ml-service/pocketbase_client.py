@@ -40,7 +40,8 @@ async def _authenticate() -> None:
             f"PocketBase admin auth failed: HTTP {resp.status_code} — {resp.text[:300]}"
         )
     _admin_token = resp.json()["token"]
-    print(f"[PB] Admin authenticated ({email}), token: {_admin_token[:20]}...")
+    # Never log the admin identity or any part of the token.
+    print("[PB] Admin authenticated.")
 
 
 async def _auth_headers() -> dict[str, str]:
@@ -88,10 +89,6 @@ async def fetch_all_swipes() -> list[dict]:
         f"{PB_URL}/api/collections/swipes/records",
         params={"perPage": 5000, "sort": "created"},
     )
-    print(f"[DEBUG] Swipes URL: {PB_URL}/api/collections/swipes/records")
-    print(f"[DEBUG] Status: {resp.status_code}")
-    print(f"[DEBUG] Response: {resp.text[:500]}")
-    print(f"[DEBUG] Token (first 20): {_admin_token[:20] if _admin_token else 'None'}")
     resp.raise_for_status()
     return resp.json().get("items", [])
 

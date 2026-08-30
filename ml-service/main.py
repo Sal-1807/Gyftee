@@ -13,12 +13,13 @@ The --reload flag restarts the server automatically when you edit Python files.
 """
 
 import asyncio
+import hmac
 import os
 import random
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
@@ -146,6 +147,36 @@ app.add_middleware(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Internal authentication
+# ─────────────────────────────────────────────────────────────────────────────
+# This service is only ever called server-to-server by the Next.js API route,
+# never by a browser, so a shared secret is enough — no JWT/OAuth needed.
+#
+# CORS above is NOT access control: it is a browser policy and does nothing to
+# stop curl or any other non-browser client. This dependency is what actually
+# keeps the internet out of /recommendations, /retrain and /model/info.
+
+INTERNAL_API_TOKEN = os.getenv("INTERNAL_API_TOKEN", "")
+
+
+async def require_internal_token(x_internal_token: str | None = Header(default=None)) -> None:
+    """
+    Guard for internal endpoints. FastAPI maps `x_internal_token` to the
+    `X-Internal-Token` request header.
+
+    Fails CLOSED: if INTERNAL_API_TOKEN isn't configured, protected endpoints
+    are unavailable rather than open to everyone.
+    """
+    if not INTERNAL_API_TOKEN:
+        print("[Gyftee ML] INTERNAL_API_TOKEN is not configured — refusing protected request")
+        raise HTTPException(status_code=503, detail="Service not configured")
+
+    # compare_digest avoids leaking the token through response-timing.
+    if not x_internal_token or not hmac.compare_digest(x_internal_token, INTERNAL_API_TOKEN):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Endpoints
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -155,7 +186,11 @@ async def health():
     return {"status": "ok", "models_trained": len(_all_gift_ids) > 0}
 
 
-@app.post("/recommendations", response_model=RecommendationResponse)
+@app.post(
+    "/recommendations",
+    response_model=RecommendationResponse,
+    dependencies=[Depends(require_internal_token)],
+)
 async def get_recommendations(req: RecommendationRequest):
     """
     Get personalized gift recommendations for a user.
@@ -175,7 +210,10 @@ async def get_recommendations(req: RecommendationRequest):
     try:
         user_swipes = await fetch_user_swipes(req.user_id)
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Cannot reach PocketBase: {e}")
+        # Detail stays server-side: the exception text can carry the internal
+        # PocketBase URL and upstream response bodies.
+        print(f"[Gyftee ML] fetch_user_swipes failed: {type(e).__name__}")
+        raise HTTPException(status_code=503, detail="Upstream data source unavailable")
 
     liked_ids    = [s["gift"] for s in user_swipes if s.get("liked") is True]
     disliked_ids = [s["gift"] for s in user_swipes if s.get("liked") is False]
@@ -228,7 +266,7 @@ async def get_recommendations(req: RecommendationRequest):
     )
 
 
-@app.post("/retrain")
+@app.post("/retrain", dependencies=[Depends(require_internal_token)])
 async def retrain():
     """
     Retrain the models with the latest data from PocketBase.
@@ -246,10 +284,15 @@ async def retrain():
         recommender.fit(gifts, swipes)
         return {"status": "ok", "gifts": len(gifts), "swipes": len(swipes)}
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Retrain failed: {e}")
+        print(f"[Gyftee ML] Retrain failed: {type(e).__name__}")
+        raise HTTPException(status_code=503, detail="Retrain failed")
 
 
-@app.get("/model/info", response_model=ModelInfoResponse)
+@app.get(
+    "/model/info",
+    response_model=ModelInfoResponse,
+    dependencies=[Depends(require_internal_token)],
+)
 async def model_info():
     """
     Diagnostic endpoint — shows what the trained models look like.

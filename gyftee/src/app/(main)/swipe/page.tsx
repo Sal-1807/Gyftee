@@ -7,10 +7,109 @@ import { SwipeDeck } from '@/components/gifts/SwipeDeck';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useToast } from '@/components/ui/Toast';
-import { getSwipedGiftIds } from '@/services/swipes.service';
+import { getSwipedGiftIds, getLikedGifts } from '@/services/swipes.service';
 import { useEffect, useRef, useState } from 'react';
-import type { Gift, GiftCategory } from '@/types/gift.types';
+import type { Gift } from '@/types/gift.types';
 import { getUnswipedGifts } from '@/services/gifts.service';
+
+// Below this many likes there isn't enough signal to infer taste from swipe
+// history, so we fall back to the categories picked during onboarding.
+const MIN_LIKES_FOR_TASTE = 3;
+
+function readInterests(userId: string): string[] {
+  try {
+    const stored = localStorage.getItem(`gyftee_interests_${userId}`);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [];
+}
+
+/**
+ * Preferred categories, strongest first.
+ *
+ * Primary signal is the user's actual liked-swipe history so preferences adapt
+ * as their taste evolves. `likedGifts` arrives newest-first, so ties are broken
+ * towards the more recently liked category. Onboarding interests are only used
+ * while there is too little history to be meaningful.
+ */
+function getPreferredCategories(likedGifts: Gift[], onboardingInterests: string[]): string[] {
+  if (likedGifts.length < MIN_LIKES_FOR_TASTE) return onboardingInterests;
+
+  const counts = new Map<string, number>();
+  const mostRecentIdx = new Map<string, number>();
+
+  likedGifts.forEach((gift, idx) => {
+    if (!gift.category) return;
+    counts.set(gift.category, (counts.get(gift.category) ?? 0) + 1);
+    if (!mostRecentIdx.has(gift.category)) mostRecentIdx.set(gift.category, idx);
+  });
+
+  if (counts.size === 0) return onboardingInterests;
+
+  return [...counts.keys()].sort((a, b) => {
+    const byCount = (counts.get(b) ?? 0) - (counts.get(a) ?? 0);
+    if (byCount !== 0) return byCount;
+    return (mostRecentIdx.get(a) ?? 0) - (mostRecentIdx.get(b) ?? 0);
+  });
+}
+
+/**
+ * Reranking layer on top of the ML recommendation — it never rescores anything.
+ *
+ * Category tier is the primary key (preferred categories in order, then
+ * everything else); the ML ranking is the secondary key, so the model still
+ * decides the ordering *within* a category. When ML is unavailable we keep the
+ * previous graceful fallback of randomising within a tier so the deck varies.
+ *
+ * `blocked` holds gifts already shown as the top card in this refresh cycle;
+ * the first unblocked gift is promoted to the front so a refresh moves forward
+ * instead of re-showing the current card.
+ */
+function rankDeck({
+  unswiped,
+  recIds,
+  isFallback,
+  preferred,
+  blocked,
+}: {
+  unswiped: Gift[];
+  recIds: string[] | undefined;
+  isFallback: boolean;
+  preferred: string[];
+  blocked: Set<string>;
+}): Gift[] {
+  const preferredRank = new Map<string, number>();
+  preferred.forEach((category, i) => preferredRank.set(category, i));
+  const unpreferredTier = preferred.length;
+
+  const secondary = new Map<string, number>();
+  if (recIds?.length && !isFallback) {
+    recIds.forEach((id, i) => secondary.set(id, i));
+  } else {
+    unswiped.forEach((gift) => secondary.set(gift.id, Math.random()));
+  }
+
+  const sorted = [...unswiped].sort((a, b) => {
+    const tierA = preferredRank.get(a.category) ?? unpreferredTier;
+    const tierB = preferredRank.get(b.category) ?? unpreferredTier;
+    if (tierA !== tierB) return tierA - tierB;
+    return (
+      (secondary.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+      (secondary.get(b.id) ?? Number.MAX_SAFE_INTEGER)
+    );
+  });
+
+  // With one gift left there is nothing to move it aside for — show it.
+  if (sorted.length <= 1 || blocked.size === 0) return sorted;
+
+  const headIdx = sorted.findIndex((gift) => !blocked.has(gift.id));
+  // -1 = everything is blocked (caller resets the cycle), 0 = already unblocked.
+  if (headIdx <= 0) return sorted;
+
+  const [head] = sorted.splice(headIdx, 1);
+  sorted.unshift(head);
+  return sorted;
+}
 
 export default function SwipePage() {
   const { user } = useAuth();
@@ -23,31 +122,28 @@ export default function SwipePage() {
   const [deckRevision, setDeckRevision] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const refreshingRef = useRef(false);
-
-  const applySort = (unswiped: Gift[], recIds: string[] | undefined, isFallback: boolean) => {
-    let interests = new Set<GiftCategory>();
-    try {
-      const stored = localStorage.getItem(`gyftee_interests_${user!.id}`);
-      if (stored) interests = new Set<GiftCategory>(JSON.parse(stored));
-    } catch {}
-
-    if (recIds?.length && !isFallback) {
-      const recOrder = new Map(recIds.map((id, i) => [id, i]));
-      return [...unswiped].sort((a, b) => (recOrder.get(a.id) ?? 9999) - (recOrder.get(b.id) ?? 9999));
-    } else if (interests.size > 0) {
-      return [...unswiped].sort((a, b) =>
-        (interests.has(a.category as GiftCategory) ? 0 : 1) - (interests.has(b.category as GiftCategory) ? 0 : 1)
-      );
-    }
-    return unswiped;
-  };
+  // Gifts shown as the top card since the last real swipe. Without this, two
+  // gifts ping-pong: the deterministic ranking puts A first, refresh demotes A
+  // to show B, and the next refresh demotes B and brings A straight back.
+  const recentlyShownRef = useRef<Set<string>>(new Set());
 
   const loadGifts = () => {
     if (!user) return;
     setLoading(true);
-    getSwipedGiftIds(user.id)
-      .then((swipedIds) => getUnswipedGifts(swipedIds))
-      .then((unswiped) => setGifts(applySort(unswiped, rec?.gift_ids, !!rec?.fallback)))
+    recentlyShownRef.current.clear();
+    Promise.all([getSwipedGiftIds(user.id), getLikedGifts(user.id)])
+      .then(async ([swipedIds, likedGifts]) => {
+        const unswiped = await getUnswipedGifts(swipedIds);
+        const ranked = rankDeck({
+          unswiped,
+          recIds: rec?.gift_ids,
+          isFallback: !!rec?.fallback,
+          preferred: getPreferredCategories(likedGifts, readInterests(user.id)),
+          blocked: new Set<string>(),
+        });
+        setGifts(ranked);
+        if (ranked[0]) recentlyShownRef.current.add(ranked[0].id);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -57,16 +153,12 @@ export default function SwipePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadGifts(); }, [user?.id]);
 
-  const handleRefreshDeck = async () => {
+  const handleRefreshDeck = async (currentGiftId: string) => {
     if (!user || refreshingRef.current) return;
     refreshingRef.current = true;
     setIsRefreshing(true);
     try {
-      let interests: string[] = [];
-      try {
-        const stored = localStorage.getItem(`gyftee_interests_${user.id}`);
-        if (stored) interests = JSON.parse(stored);
-      } catch {}
+      const interests = readInterests(user.id);
 
       const res = await fetch('/api/recommendations', {
         method: 'POST',
@@ -75,25 +167,34 @@ export default function SwipePage() {
       });
       const freshRec = res.ok ? await res.json() : null;
 
-      const swipedIds = await getSwipedGiftIds(user.id);
+      const [swipedIds, likedGifts] = await Promise.all([
+        getSwipedGiftIds(user.id),
+        getLikedGifts(user.id),
+      ]);
       const unswiped = await getUnswipedGifts(swipedIds);
 
-      let sorted: Gift[];
-      if (freshRec?.gift_ids?.length && !freshRec?.fallback) {
-        sorted = applySort(unswiped, freshRec.gift_ids, false);
-      } else {
-        // ML unavailable — sort by interests; if no interests, shuffle
-        sorted = applySort(unswiped, undefined, true);
-        if (sorted === unswiped) {
-          sorted = [...unswiped];
-          for (let i = sorted.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
-          }
-        }
+      const blocked = new Set(recentlyShownRef.current);
+      if (currentGiftId) blocked.add(currentGiftId);
+
+      // Every remaining gift has already been shown — start a new cycle rather
+      // than freezing on one ordering. The current card stays blocked unless
+      // it's the only unseen gift left.
+      if (unswiped.length > 0 && unswiped.every((gift) => blocked.has(gift.id))) {
+        recentlyShownRef.current.clear();
+        blocked.clear();
+        if (unswiped.length > 1 && currentGiftId) blocked.add(currentGiftId);
       }
 
-      setGifts(sorted);
+      const ranked = rankDeck({
+        unswiped,
+        recIds: freshRec?.gift_ids,
+        isFallback: !!freshRec?.fallback,
+        preferred: getPreferredCategories(likedGifts, interests),
+        blocked,
+      });
+
+      setGifts(ranked);
+      if (ranked[0]) recentlyShownRef.current.add(ranked[0].id);
       setDeckRevision((r) => r + 1);
       toast('Deck refreshed!', 'success');
     } finally {
@@ -104,6 +205,8 @@ export default function SwipePage() {
 
   const handleSwipe = (giftId: string, liked: boolean) => {
     if (!user) return;
+    // A real swipe changes the candidate pool, so the shown-history is stale.
+    recentlyShownRef.current.clear();
     submitSwipe({ giftId, liked }, {
       onSuccess: () => {
         if (liked) toast('Added to wishlist!', 'success');

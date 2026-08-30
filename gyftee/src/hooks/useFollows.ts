@@ -42,6 +42,10 @@ export function useToggleFollow(currentUserId: string) {
       qc.invalidateQueries({ queryKey: ['isFollowing', currentUserId, targetId] });
       qc.invalidateQueries({ queryKey: ['followers', targetId] });
       qc.invalidateQueries({ queryKey: ['following', currentUserId] });
+      // The swipes read rule is follow-gated, so this user's wishlist result
+      // changes the moment the follow does. Without this the profile page keeps
+      // showing the pre-follow (empty) response until a manual reload.
+      qc.invalidateQueries({ queryKey: ['likedGifts', targetId] });
     },
   });
 }
